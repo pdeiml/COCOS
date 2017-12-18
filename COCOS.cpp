@@ -76,7 +76,8 @@ using namespace std;
 #define rtTimeHarp260PT2 0x00010206    // (SubID = $00 ,RecFmt: $01) (V1), T-Mode: $02 (T2), HW: $06 (TimeHarp260P)
 
 #pragma pack(8) //structure alignment to 8 byte boundaries
-TH1I *timestamphistogram = new TH1I("Timestamp","Timestamp",10,0,10);
+TH1I *timestamphistogram_c0 = new TH1I("Timestamp_c0","Timestamps Channel 0",10,0,10);
+TH1I *timestamphistogram_c1 = new TH1I("Timestamp_c1","Timestamps Channel 1",10,0,10);
 // A Tag entry
 struct TgHd{
   char Ident[32];     // Identifier of the tag
@@ -353,7 +354,7 @@ void ProcessHHT2(unsigned int TTTRRecord, int HHVersion)
       {
         truetime = oflcorrection + T2Rec.bits.timetag;
     	GotPhoton(truetime, 0, 0);
-      	//timestamphistogram->Fill(T2Rec.bits.timetag%8);
+      timestamphistogram_c0->Fill(T2Rec.bits.timetag%8);
       }
     }
     else //regular input channel
@@ -361,7 +362,7 @@ void ProcessHHT2(unsigned int TTTRRecord, int HHVersion)
     truetime = oflcorrection + T2Rec.bits.timetag;
     c = T2Rec.bits.channel + 1;
     GotPhoton(truetime, c, 0);
-    timestamphistogram->Fill(T2Rec.bits.timetag%8);
+    timestamphistogram_c1->Fill(T2Rec.bits.timetag%8);
     }
 
 }
@@ -1226,15 +1227,14 @@ int main (int argc, char* argv[])
 
     TApplication TheCorrelationCanvas("TCC",0,0);
 
-          TCanvas *timestampcanvas = new TCanvas("timestamp","timestamp");
-          timestamphistogram->Draw();
-          timestampcanvas->Modified();
-          timestampcanvas->Update();
+          TCanvas *timestampcanvas = new TCanvas("timestamp","timestamp",700,500);
+          timestampcanvas->SetFillColor(29); timestampcanvas->SetGrid(); timestampcanvas->Divide(2,1);
+          timestampcanvas->cd(1); timestamphistogram_c0->Draw();
+          timestampcanvas->cd(2); timestamphistogram_c1->Draw();
+          timestampcanvas->Modified(); timestampcanvas->Update();
       
           TCanvas * CorrelationCanvas = new TCanvas("CorrelationCanvas", "Correlations", 700, 500);
-          CorrelationCanvas->SetFillColor(29);
-          CorrelationCanvas->SetGrid();
-          CorrelationCanvas->Divide(2,2);
+          CorrelationCanvas->SetFillColor(29); CorrelationCanvas->SetGrid(); CorrelationCanvas->Divide(2,2);
           for (int bas=0; bas<2; bas++)
           {
               for (int inv=0; inv<2; inv++)
@@ -1245,13 +1245,10 @@ int main (int argc, char* argv[])
                 if (bas != inv){pol0fitline[bas][inv]->Draw();}
               }
           }
-          CorrelationCanvas->Modified();
-          CorrelationCanvas->Update();
+          CorrelationCanvas->Modified(); CorrelationCanvas->Update();
       
           TCanvas * g2Canvas = new TCanvas("g_{2}-Canvas", "g_{2}-functions", 700, 500);
-          g2Canvas->SetFillColor(29);
-          g2Canvas->SetGrid();
-          g2Canvas->Divide(2,2);
+          g2Canvas->SetFillColor(29); g2Canvas->SetGrid(); g2Canvas->Divide(2,2);
           for (int bas=0; bas<2; bas++)
           {
               for (int inv=0; inv<2; inv++)
@@ -1261,13 +1258,10 @@ int main (int argc, char* argv[])
                   g2_smoothed[bas][inv]->Draw("same");
               }
           }
-          g2Canvas->Modified();
-          g2Canvas->Update();
+          g2Canvas->Modified(); g2Canvas->Update();
       
           TCanvas * FFTCanvas = new TCanvas("fftCanvas", "FFT-Canvas", 700, 500);
-          FFTCanvas->SetFillColor(29);
-          FFTCanvas->SetGrid();
-          FFTCanvas->Divide(2,2);
+          FFTCanvas->SetFillColor(29); FFTCanvas->SetGrid(); FFTCanvas->Divide(2,2);
           for (int bas=0; bas<2; bas++)
           {
                 for (int inv=0; inv<2; inv++)
@@ -1276,8 +1270,7 @@ int main (int argc, char* argv[])
                     fouriertransform[bas][inv]->Draw();
                 }
           }
-          FFTCanvas->Modified();
-          FFTCanvas->Update();
+          FFTCanvas->Modified(); FFTCanvas->Update();
 
     TheCorrelationCanvas.Run();        
     //################ Application for the canvases ################\\
