@@ -39,9 +39,6 @@ using namespace std;
 
 
 
-
-
-
 //############# Zuerst einiges Zeug aus dem ptu -> txt - Übertragungscode, teilweise abgeändert #############//
 
 
@@ -649,14 +646,6 @@ int main (int argc, char* argv[])
   	printf("\nPicoQuant Unified TTTR (PTU) Mode File Demo");
   	printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 
-  	/*if((argc<3)||(argc>3))
-  	{
-  	 printf("usage: ht2demo infile oufile\n");
-  	 printf("infile is a Unified TTTR ptu file (binary)\n");
-  	 printf("outfile is ASCII\n");
-  	 getchar();
-  	 exit(-1);
-  	}*/
   	if((fpin=fopen(argv[1],"rb"))==NULL)
       	{printf("\n ERROR! Input file cannot be opened, aborting.\n"); goto close;}
 
@@ -787,47 +776,26 @@ int main (int argc, char* argv[])
  	 switch (RecordType)
  	 {
  	   case rtPicoHarpT2:
- 	     //fprintf(fpout, "PicoHarp T2 data\n");
- 	     //fprintf(fpout,"\nrecord# chan   nsync truetime/ps\n");
  	     break;
  	   case rtPicoHarpT3:
- 	     //fprintf(fpout, "PicoHarp T3 data\n");
- 	     //fprintf(fpout,"\nrecord# chan   nsync truetime/ns dtime\n");
  	     break;
  	   case rtHydraHarpT2:
- 	     //fprintf(fpout, "HydraHarp V1 T2 data\n");
- 	     //fprintf(fpout,"\nrecord# chan   nsync truetime/ps\n");
  	     break;
  	   case rtHydraHarpT3:
- 	     //fprintf(fpout, "HydraHarp V1 T3 data\n");
- 	     //fprintf(fpout,"\nrecord# chan   nsync truetime/ns dtime\n");
  	     break;
  	   case rtHydraHarp2T2:
- 	     //fprintf(fpout, "HydraHarp V2 T2 data\n");
- 	     //fprintf(fpout,"\nrecord# chan   nsync truetime/ps\n");
  	     break;
  	   case rtHydraHarp2T3:
- 	     //fprintf(fpout, "HydraHarp V2 T3 data\n");
- 	     //fprintf(fpout,"\nrecord# chan   nsync truetime/ns dtime\n");
  	     break;
  	   case rtTimeHarp260NT3:
- 	     //fprintf(fpout, "TimeHarp260N T3 data\n");
- 	     //fprintf(fpout,"\nrecord# chan   nsync truetime/ns dtime\n");
  	     break;
  	   case rtTimeHarp260NT2:
- 	     //fprintf(fpout, "TimeHarp260N T2 data\n");
- 	     //fprintf(fpout,"\nrecord# chan   nsync truetime/ps\n");
  	     break;
  	   case rtTimeHarp260PT3:
- 	     //fprintf(fpout, "TimeHarp260P T3 data\n");
- 	     //fprintf(fpout,"\nrecord# chan   nsync truetime/ns dtime\n");
  	     break;
  	   case rtTimeHarp260PT2:
- 	     //fprintf(fpout, "TimeHarp260P T2 data\n");
- 	     //fprintf(fpout,"\nrecord# chan   nsync truetime/ps\n");
  	     break;
  	 default:
- 	   //fprintf(fpout, "Unknown record type: 0x%X\n 0x%X\n ", RecordType);
  	   goto close;
   	}
 
@@ -835,24 +803,10 @@ int main (int argc, char* argv[])
 
   
   	std::cout << "Total number of records of the file:\t" << NumRecords << std::endl;
-  	/*maxinput = NumRecords;
-  	//Limit inputs, if limitation is set
-  	if (linelimit == true && inputlines < NumRecords)
- 	  {
-    	maxinput = inputlines;
-  	}*/
-
-
-
-
-
-
-
-
+  	
 
 
   	//Ab jetzt: Vektor füllen, bis 10^9 Events, anschließend auswerten und das ganze nochmal machen...
-
 
   	//Jetzt kommt das eigentliche Auslesen aus der ptu-Datei:
   	//for(RecNum=0; RecNum<maxinput; RecNum++)
@@ -870,36 +824,30 @@ int main (int argc, char* argv[])
     	{
     	case rtPicoHarpT2:
     	  IsT2 = true;
-    	  //if (linelimit == false || RecNum >= startinput){ProcessPHT2(TTTRRecord);}
     	  ProcessPHT2(TTTRRecord);
     	  break;
     	case rtPicoHarpT3:
     	  IsT2 = false;
-    	  //if (linelimit == false || RecNum >= startinput){ProcessPHT3(TTTRRecord);}
     	  ProcessPHT3(TTTRRecord);
     	  break;
     	case rtHydraHarpT2:
     	  IsT2 = true;
-    	  //if (linelimit == false || RecNum >= startinput){ProcessHHT2(TTTRRecord, 1);}
     	  ProcessHHT2(TTTRRecord, 1);
     	  break;
     	case rtHydraHarpT3:
     	  IsT2 = false;
-    	  //if (linelimit == false || RecNum >= startinput){ProcessHHT3(TTTRRecord, 1);}
     	  ProcessHHT3(TTTRRecord, 1);
     	  break;
     	case rtHydraHarp2T2:
     	case rtTimeHarp260NT2:
     	case rtTimeHarp260PT2:
     	  IsT2 = true;
-    	  //if (linelimit == false || RecNum >= startinput){ProcessHHT2(TTTRRecord, 2);}
     	  ProcessHHT2(TTTRRecord, 2);
     	  break;
     	case rtHydraHarp2T3:
     	case rtTimeHarp260NT3:
     	case rtTimeHarp260PT3:
     	  IsT2 = false;
-    	  //if (linelimit == false || RecNum >= startinput){ProcessHHT3(TTTRRecord, 2);}
     	  ProcessHHT3(TTTRRecord, 2);
     	  break;
     	default:
@@ -1093,33 +1041,6 @@ int main (int argc, char* argv[])
 
             pol0fitline[bas][inv] = new TLine(taubeg, pol0off[bas][inv], tauend, pol0off[bas][inv]);
             pol0fitline[bas][inv]->SetLineColor(5); pol0fitline[bas][inv]->SetLineWidth(2);
-            /*
-            //SO HALB SINNVOLL:
-            //Calculate standard error manually
-            double squaresum = 0.; double yfit; double ymeas;
-            //std::cout << "\n\n" << std::endl;
-            for (int i=0; i<nbins; i++)
-            {
-            	ymeas = correlationarray[i][1][bas][inv]; //std::cout << "Ymeas: " << ymeas;
-            	yfit  = gausfit[bas][inv]->Eval( taubeg + i * binwidth ); //std::cout << "   Yfit: " << yfit << std::endl;
-            	squaresum += pow( (ymeas - yfit) , 2); 
-            }
-            manualvariance[bas][inv] = squaresum/(nbins-1); //std::cout << "Variance:  " << manualvariance[bas][inv] << std::endl;
-            manualerror[bas][inv] = sqrt(manualvariance[bas][inv]); //std::cout << "Error:  " << manualerror[bas][inv] << std::endl;
-
-            gausfitgraph[bas][inv] = new TGraphErrors(nbins);
-            for (int i=0; i<nbins; i++)
-            {
-            	gausfitgraph[bas][inv]->SetPoint(i, correlationarray[i][0][bas][inv], gausfit[bas][inv]->Eval(correlationarray[i][0][bas][inv]));
-            	gausfitgraph[bas][inv]->SetPointError(i, 0., manualerror[bas][inv]);
-            }
-            gausfitgraph[bas][inv]->SetLineColor(2);
-            gausfitgraph[bas][inv]->SetFillColor(2); gausfitgraph[bas][inv]->SetFillStyle(3001);
-            gausfitgraph[bas][inv]->GetYaxis()->SetRangeUser(minbin - 0.05 * bindiff, maxbin + 0.05* bindiff);
-            graphtitleos[bas][inv] << "Channel " << bas << " <> Channel" << inv;
-            graphtitle[bas][inv] = graphtitleos[bas][inv].str();
-            gausfitgraph[bas][inv]->SetTitle(graphtitle[bas][inv].c_str());
-            */
         }
     }
 
@@ -1157,34 +1078,6 @@ int main (int argc, char* argv[])
                 	g2_max_x[bas][inv] = i;
                 }
             }
-
-
-
-            /*
-            //Error propagation from manual calculated errors
-            g2witherrors[bas][inv] = new TGraphErrors(nbins);
-            double B  = gausoff[bas][inv];
-            double dB = manualerror[bas][inv];//Error on normalisation
-            double C;//Countrate
-            double dg2;//Error on g2-Funktion
-            for (int i=0; i<nbins; i++)
-            {
-            	C = correlationarray[i][1][bas][inv];
-            	dg2 = sqrt(C * (1+C*pow(dB/B, 2)))/B;//Formula derived via error-propagation
-
-            	correlationarray[i][4][bas][inv] = dg2;
-            	g2witherrors[bas][inv]->SetPoint(i, taubeg + i * binwidth, C/B);
-            	g2witherrors[bas][inv]->SetPointError(i, 0., dg2);
-            }
-            g2witherrors[bas][inv]->SetFillColor(33);
-            g2witherrors[bas][inv]->SetLineColor(2);
-            g2witherrors[bas][inv]->SetLineWidth(2);
-            g2witherrors[bas][inv]->SetMarkerColor(4);
-            g2witherrors[bas][inv]->SetMarkerStyle(1);
-            g2witherrors[bas][inv]->SetTitle(graphtitle[bas][inv].c_str());
-            g2witherrors[bas][inv]->GetXaxis()->SetTitle("#tau [ps]");
-            g2witherrors[bas][inv]->GetYaxis()->SetTitle("g_{2}(#tau)");
-            */
         }
     }
 
@@ -1228,10 +1121,6 @@ int main (int argc, char* argv[])
             fouriertransform[bas][inv]->GetXaxis()->SetTitle("f [Hz]");
         }
     }
-
-
-
-
 
 
 
@@ -1314,11 +1203,7 @@ int main (int argc, char* argv[])
     }
     
 
-
-
-
     //Information for you that the evaluation has finished  
-    //system("Say Your Root Evaluation has finished");
     //system("afplay /System/Library/Sounds/Glass.aiff");
     //system("afplay /System/Library/Sounds/Glass.aiff");  
 
@@ -1335,126 +1220,77 @@ int main (int argc, char* argv[])
 
     char argc2[8]; char argv2[8];
 
-    /*for (int i=1; i<9; i++)
-    {
-    	std::cout << i << "\t" << timestamphistogram->GetBinContent(i) << std::endl;
-    }*/
+
+    //##############################################################\\
+    //################ APPLICATION FOR THE CANVASES ################\\
 
     TApplication TheCorrelationCanvas("TCC",0,0);
 
-    TCanvas *timestampcanvas = new TCanvas("timestamp","timestamp");
-    timestamphistogram->Draw();
-
-    /*TCanvas *g2histocanvas = new TCanvas("g2histo","g2histo",700,500);
-    g2histocanvas->Divide(2,2);
-    g2histocanvas->cd(1); g2histo[0][0]->Draw();
-    g2histocanvas->cd(2); g2histo[0][1]->Draw();
-    g2histocanvas->cd(3); g2histo[1][0]->Draw();
-    g2histocanvas->cd(4); g2histo[1][1]->Draw();*/
-
-
-
-    TCanvas * CorrelationCanvas = new TCanvas("CorrelationCanvas", "Correlations", 700, 500);
-    CorrelationCanvas->SetFillColor(29);
-    CorrelationCanvas->SetGrid();
-    CorrelationCanvas->Divide(2,2);
-
-    for (int bas=0; bas<2; bas++)
-    {
-        for (int inv=0; inv<2; inv++)
-        {
-        	CorrelationCanvas->cd(whichpad[bas][inv]);
-
-        	/*gausfit[bas][inv]->Draw("E3");
-        	gausfit[bas][inv]->GetXaxis()->SetTitle("#tau [ps]");
-        	gausfit[bas][inv]->GetYaxis()->SetTitle("Counts");
-        	gausfit[bas][inv]->GetYaxis()->SetTitleOffset(1.4);*/
-
-        	/*gausfitgraph[bas][inv]->Draw("A3");
-        	gausfitgraph[bas][inv]->GetXaxis()->SetTitle("#tau [ps]");
-        	gausfitgraph[bas][inv]->GetYaxis()->SetTitle("Counts");
-        	gausfitgraph[bas][inv]->GetYaxis()->SetTitleOffset(1.4);*/
-
-        	allchannelhistogram[bas][inv]->Draw();
-        	//pol0fit[bas][inv]->Draw("same");
-          if (bas != inv){pol0fitline[bas][inv]->Draw();}
-
-        	/*if (bas == 0 && inv == 0)
-        	{
-        		allchannelhistogram[1][1]->SetLineColor(2);
-        		allchannelhistogram[1][1]->Draw("same");
-        	}
-        	if (bas == 0 && inv == 1)
-        	{
-        		allchannelhistogram[1][0]->SetLineColor(2);
-        		allchannelhistogram[1][0]->Draw("same");
-        	}*/
-                        
-            //oneovereline[bas][inv]->Draw(); tau_cline[bas][inv]->Draw();
-        }
-    }
-    
-
-    CorrelationCanvas->Modified();
-    CorrelationCanvas->Update();
-
-
-    TCanvas * g2Canvas = new TCanvas("g_{2}-Canvas", "g_{2}-functions", 700, 500);
-    g2Canvas->SetFillColor(29);
-    g2Canvas->SetGrid();
-    g2Canvas->Divide(2,2);
-
-    for (int bas=0; bas<2; bas++)
-    {
-        for (int inv=0; inv<2; inv++)
-        {
-            g2Canvas->cd(whichpad[bas][inv]);
-            g2[bas][inv]->Draw();
-            //g2witherrors[bas][inv]->Draw();
-            g2_smoothed[bas][inv]->Draw("same");
-            //taucx2Line[bas][inv]->Draw(); taucy2Line[bas][inv]->Draw();
-            //taucxmaxLine[bas][inv]->Draw();taucymaxLine[bas][inv]->Draw();
-        }
-    }
-    g2Canvas->Update();
-
-
-    TCanvas * FFTCanvas = new TCanvas("fftCanvas", "FFT-Canvas", 700, 500);
-    FFTCanvas->SetFillColor(29);
-    FFTCanvas->SetGrid();
-    FFTCanvas->Divide(2,2);
-
-    for (int bas=0; bas<2; bas++)
-    {
-          for (int inv=0; inv<2; inv++)
+          TCanvas *timestampcanvas = new TCanvas("timestamp","timestamp");
+          timestamphistogram->Draw();
+          timestampcanvas->Modified();
+          timestampcanvas->Update();
+      
+          TCanvas * CorrelationCanvas = new TCanvas("CorrelationCanvas", "Correlations", 700, 500);
+          CorrelationCanvas->SetFillColor(29);
+          CorrelationCanvas->SetGrid();
+          CorrelationCanvas->Divide(2,2);
+          for (int bas=0; bas<2; bas++)
           {
-              FFTCanvas->cd(whichpad[bas][inv]);
-              fouriertransform[bas][inv]->Draw();
-
-          /*if (bas == 0 && inv == 0)
-        		{
-        			fouriertransform[1][1]->SetLineColor(2);
-        			fouriertransform[1][1]->Draw("same");
-        		}
-        		if (bas == 0 && inv == 1)
-        		{
-        			fouriertransform[1][0]->SetLineColor(2);
-        			fouriertransform[1][0]->Draw("same");
-        		}*/
-
+              for (int inv=0; inv<2; inv++)
+              {
+              	CorrelationCanvas->cd(whichpad[bas][inv]);
+              	allchannelhistogram[bas][inv]->Draw();
+              	//pol0fit[bas][inv]->Draw("same");
+                if (bas != inv){pol0fitline[bas][inv]->Draw();}
+              }
           }
-    }
-    FFTCanvas->Update();
+          CorrelationCanvas->Modified();
+          CorrelationCanvas->Update();
+      
+          TCanvas * g2Canvas = new TCanvas("g_{2}-Canvas", "g_{2}-functions", 700, 500);
+          g2Canvas->SetFillColor(29);
+          g2Canvas->SetGrid();
+          g2Canvas->Divide(2,2);
+          for (int bas=0; bas<2; bas++)
+          {
+              for (int inv=0; inv<2; inv++)
+              {
+                  g2Canvas->cd(whichpad[bas][inv]);
+                  g2[bas][inv]->Draw();
+                  g2_smoothed[bas][inv]->Draw("same");
+              }
+          }
+          g2Canvas->Modified();
+          g2Canvas->Update();
+      
+          TCanvas * FFTCanvas = new TCanvas("fftCanvas", "FFT-Canvas", 700, 500);
+          FFTCanvas->SetFillColor(29);
+          FFTCanvas->SetGrid();
+          FFTCanvas->Divide(2,2);
+          for (int bas=0; bas<2; bas++)
+          {
+                for (int inv=0; inv<2; inv++)
+                {
+                    FFTCanvas->cd(whichpad[bas][inv]);
+                    fouriertransform[bas][inv]->Draw();
+                }
+          }
+          FFTCanvas->Modified();
+          FFTCanvas->Update();
 
-
-    TheCorrelationCanvas.Run();
+    TheCorrelationCanvas.Run();        
+    //################ Application for the canvases ################\\
+    //##############################################################\\
 
   
 
-}
+}//End of main
+
 
 
 //######################## START NOT IMPORTANT NOW ###############################
+//Some old functions that are not used any more but maybe need to be revived some day
     /*
 
 
