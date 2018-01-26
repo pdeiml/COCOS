@@ -11,4 +11,4 @@ Aktueller Stand der Dinge:
 
 
 # COCOShpc
-HPC-Version (ohne Interaktion). Die Einstellungen müssen hierzu in der 'settings.txt' Datei vorgenommen werden, im Format, wie sie in der Beispiel-Datei mitgeliefert wird.
+HPC-Version (ohne Interaktion). Die Einstellungen müssen hierzu in der 'settings.txt' Datei vorgenommen werden, im Format, wie sie in der Beispiel-Datei mitgeliefert wird. Die settings.txt muss im gleichen Ordner liegen wie die COCOShpc-exe.
