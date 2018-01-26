@@ -1039,7 +1039,8 @@ int main (int argc, char* argv[])
             bindiff = maxbin - minbin;
             maxx = allchannelhistogram[bas][inv]->GetMaximumBin();
 
-            pol0fit[bas][inv] = new TF1("Pol-0-Fit","pol0", taubeg, tauend);
+            if (bas != inv){pol0fit[bas][inv] = new TF1("Pol-0-Fit","pol0", taubeg, tauend);}
+            if (bas == inv){pol0fit[bas][inv] = new TF1("Pol-0-Fit","pol0", taubeg + 3*(tauend-taubeg)/4, tauend);}
             pol0fit[bas][inv]->SetParName(0,"offfset"); //pol0fit[bas][inv]->SetParameter(0, allchannelhistogram[bas][inv]->GetBinContent(0));
 
             allchannelhistogram[bas][inv]->Fit(pol0fit[bas][inv], "0QR");
@@ -1059,7 +1060,7 @@ int main (int argc, char* argv[])
 
 
     //Create g2-function: Divide events by the normalisation by pol0-fit
-    double g2_max[2][2];//Will become maximum value of arraycolumn
+    double g2_max[2][2], g2_min[2][2];//Will become maximum and minimum values of arraycolumn
     int g2_max_x[2][2];//X-Bin-Value of maximum value
     TGraph *g2[2][2];
     TGraphErrors *g2witherrors[2][2];
@@ -1091,12 +1092,36 @@ int main (int argc, char* argv[])
             }
         }
     }
-
-
     g2[0][0]->SetTitle("g_{2}-function channel 0 to channel 0");
     g2[0][1]->SetTitle("g_{2}-function channel 0 to channel 1");
     g2[1][0]->SetTitle("g_{2}-function channel 1 to channel 0");
     g2[1][1]->SetTitle("g_{2}-function channel 1 to channel 1");
+
+    //g2-Distribution histogramm
+    double g2ymax, g2ymin;
+    TH1D * g2disthisto[2][2];
+    for (int bas=0; bas<2; bas++)
+    {
+    	for (int inv=0; inv<2; inv++)
+    	{
+    		g2ymax = correlationarray[0][2][bas][inv]; g2ymin = correlationarray[0][2][bas][inv];
+    		for (int i=0; i<nbins; i++)
+    		{
+    			if (correlationarray[i][2][bas][inv] > g2ymax){g2ymax = correlationarray[i][2][bas][inv];}
+    			if (correlationarray[i][2][bas][inv] < g2ymin){g2ymin = correlationarray[i][2][bas][inv];}
+    		}
+    		g2disthisto[bas][inv] = new TH1D("g2dist","g2-Distribution", (g2ymax - g2ymin)/0.001, g2ymin, g2ymax);
+    		std::cout << "nbins: " << (g2ymax - g2ymin)/0.001 << std::endl;
+    		for (int i=0; i<nbins; i++)
+    		{
+    			g2disthisto[bas][inv]->Fill(correlationarray[i][2][bas][inv]);
+    		}
+    	}
+    }
+    g2disthisto[0][0]->SetTitle("g_{2}-distribution channel 0 to channel 0");
+    g2disthisto[0][1]->SetTitle("g_{2}-distribution channel 0 to channel 1");
+    g2disthisto[1][0]->SetTitle("g_{2}-distribution channel 1 to channel 0");
+    g2disthisto[1][1]->SetTitle("g_{2}-distribution channel 1 to channel 1");
 
 
     //FFT of (g2-)histogram
@@ -1237,12 +1262,12 @@ int main (int argc, char* argv[])
 
     TApplication TheCorrelationCanvas("TCC",0,0);
 
-          TCanvas *timestampcanvas = new TCanvas("timestamp","timestamp",700,500);
+          /*TCanvas *timestampcanvas = new TCanvas("timestamp","timestamp",700,500);
           timestampcanvas->SetFillColor(29); timestampcanvas->SetGrid(); timestampcanvas->Divide(2,1);
           timestampcanvas->cd(1); timestamphistogram[0]->Draw();
           timestampcanvas->cd(2); timestamphistogram[1]->Draw();
           timestampcanvas->Modified(); timestampcanvas->Update();
-          timestampcanvas->SaveAs("results/ts.root");
+          timestampcanvas->SaveAs("results/ts.root");*/
       
           TCanvas * CorrelationCanvas = new TCanvas("CorrelationCanvas", "Correlations", 700, 500);
           CorrelationCanvas->SetFillColor(29); CorrelationCanvas->SetGrid(); CorrelationCanvas->Divide(2,2);
@@ -1272,6 +1297,19 @@ int main (int argc, char* argv[])
           }
           g2Canvas->Modified(); g2Canvas->Update();
           g2Canvas->SaveAs("results/g2.root");
+
+          TCanvas * g2distCanvas = new TCanvas("g_{2}-dist-Canvas", "g_{2}-Distributions", 700, 500);
+          g2distCanvas->SetFillColor(29); g2distCanvas->SetGrid(); g2distCanvas->Divide(2,2);
+          for (int bas=0; bas<2; bas++)
+          {
+              for (int inv=0; inv<2; inv++)
+              {
+                  g2distCanvas->cd(whichpad[bas][inv]);
+                  g2disthisto[bas][inv]->Draw();
+              }
+          }
+          g2distCanvas->Modified(); g2distCanvas->Update();
+          g2distCanvas->SaveAs("results/g2dist.root");
       
           TCanvas * FFTCanvas = new TCanvas("fftCanvas", "FFT-Canvas", 700, 500);
           FFTCanvas->SetFillColor(29); FFTCanvas->SetGrid(); FFTCanvas->Divide(2,2);
