@@ -76,8 +76,8 @@ using namespace std;
 #define rtTimeHarp260PT2 0x00010206    // (SubID = $00 ,RecFmt: $01) (V1), T-Mode: $02 (T2), HW: $06 (TimeHarp260P)
 
 #pragma pack(8) //structure alignment to 8 byte boundaries
-TH1I *timestamphistogram_c0 = new TH1I("Timestamp_c0","Timestamps Channel 0",10,0,10);
-TH1I *timestamphistogram_c1 = new TH1I("Timestamp_c1","Timestamps Channel 1",10,0,10);
+//TH1I *timestamphistogram_c0 = new TH1I("Timestamp_c0","Timestamps Channel 0",10,0,10);
+//TH1I *timestamphistogram_c1 = new TH1I("Timestamp_c1","Timestamps Channel 1",10,0,10);
 // A Tag entry
 struct TgHd{
   char Ident[32];     // Identifier of the tag
@@ -289,7 +289,6 @@ void ProcessPHT2(unsigned int TTTRRecord)
     if((int)Record.bits.channel > 4) //Should not occur
     {
       //printf(" Illegal Chan: #%I64u %1u\n",RecNum,Record.bits.channel);
-      //fprintf(fpout," illegal chan.\n");
     }
     else
     {
@@ -354,7 +353,7 @@ void ProcessHHT2(unsigned int TTTRRecord, int HHVersion)
       {
         truetime = oflcorrection + T2Rec.bits.timetag;
     	GotPhoton(truetime, 0, 0);
-      timestamphistogram_c0->Fill(T2Rec.bits.timetag%8);
+      //timestamphistogram_c0->Fill(T2Rec.bits.timetag%8);
       }
     }
     else //regular input channel
@@ -362,7 +361,7 @@ void ProcessHHT2(unsigned int TTTRRecord, int HHVersion)
     truetime = oflcorrection + T2Rec.bits.timetag;
     c = T2Rec.bits.channel + 1;
     GotPhoton(truetime, c, 0);
-    timestamphistogram_c1->Fill(T2Rec.bits.timetag%8);
+    //timestamphistogram_c1->Fill(T2Rec.bits.timetag%8);
     }
 
 }
@@ -375,7 +374,7 @@ void ProcessHHT3(unsigned int TTTRRecord, int HHVersion)
     unsigned long allbits;
     struct  {
       unsigned nsync    :10;  // numer of sync period
-      unsigned dtime    :15;    // delay from last sync in units of chosen resolution
+      unsigned dtime    :15;  // delay from last sync in units of chosen resolution
       unsigned channel  :6;
       unsigned special  :1;
     } bits;
@@ -450,7 +449,7 @@ int main (int argc, char* argv[])
 
     //#############################################################################//
     //############# Jetzt kommen jede Menge manuelles-Einstellen-Zeug #############//
-    std::string calibrationmodestring[2];
+    std::string calibrationmodestring[3];
     calibrationmodestring[0] = "none";
     calibrationmodestring[1] = "read";
     calibrationmodestring[2] = "write";
@@ -604,6 +603,10 @@ int main (int argc, char* argv[])
 	  allchannelhistogram[1][0]->GetXaxis()->SetTitle("#tau [ps]");
 	  allchannelhistogram[1][1]->GetXaxis()->SetTitle("#tau [ps]");
 
+	TH1I *timestamphistogram[2];
+	  timestamphistogram[0] = new TH1I ("Timestamp_c0","Timestamps Channel 0",10,0,10);
+	  timestamphistogram[1] = new TH1I ("Timestamp_c1","Timestamps Channel 1",10,0,10);
+
     
 
 	  double correlationarray[nbins][5][2][2];
@@ -694,17 +697,13 @@ int main (int argc, char* argv[])
   	  {
   	    sprintf(Buffer, "%s(%d)", TagHead.Ident,TagHead.Idx);
   	  }
-  	  //fprintf(fpout, "\n%-40s", Buffer);
   	  switch (TagHead.Typ)
   	  {
   	      case tyEmpty8:
-  	      //fprintf(fpout, "<empty Tag>");
   	      break;
   	    case tyBool8:
-  	      //fprintf(fpout, "%s", bool(TagHead.TagValue)?"True":"False");
   	      break;
   	    case tyInt8:
-  	      //fprintf(fpout, "%lld", TagHead.TagValue);
   	      // get some Values we need to analyse records
   	      if (strcmp(TagHead.Ident, TTTRTagNumRecords)==0) // Number of records
   	                  NumRecords = TagHead.TagValue;
@@ -712,13 +711,10 @@ int main (int argc, char* argv[])
   	                  RecordType = TagHead.TagValue;
   	      break;
   	    case tyBitSet64:
-  	      //fprintf(fpout, "0x%16.16X", TagHead.TagValue);
   	      break;
   	    case tyColor8:
-  	      //fprintf(fpout, "0x%16.16X", TagHead.TagValue);
   	      break;
   	    case tyFloat8:
-  	      //fprintf(fpout, "%E", *(double*)&(TagHead.TagValue));
   	      if (strcmp(TagHead.Ident, TTTRTagRes)==0) // Resolution for TCSPC-Decay
   	                  Resolution = *(double*)&(TagHead.TagValue);
   	      if (strcmp(TagHead.Ident, TTTRTagGlobRes)==0) // Global resolution for timetag
@@ -726,14 +722,12 @@ int main (int argc, char* argv[])
                       iGlobRes = 1e12 * GlobRes;
   	      break;
   	    case tyFloat8Array:
-  	      //fprintf(fpout, "<Float Array with %d Entries>", TagHead.TagValue / sizeof(double));
   	      // only seek the Data, if one needs the data, it can be loaded here
   	      fseek(fpin, (long)TagHead.TagValue, SEEK_CUR);
   	      break;
   	    case tyTDateTime:
   	      time_t CreateTime;
   	      CreateTime = TDateTime_TimeT(*((double*)&(TagHead.TagValue)));
-  	      //fprintf(fpout, "%s", asctime(gmtime(&CreateTime)), "\0");
   	      break;
   	    case tyAnsiString:
   	      AnsiBuffer = (char*)calloc((size_t)TagHead.TagValue,1);
@@ -744,7 +738,6 @@ int main (int argc, char* argv[])
   	        free(AnsiBuffer);
   	                goto close;
   	      }
-  	      //fprintf(fpout, "%s", AnsiBuffer);
   	      free(AnsiBuffer);
   	      break;
   	          case tyWideString:
@@ -756,11 +749,9 @@ int main (int argc, char* argv[])
   	        free(WideBuffer);
   	                goto close;
   	      }
-  	      //fwprintf(fpout, L"%s", WideBuffer);
   	      free(WideBuffer);
   	      break;
   	          case tyBinaryBlob:
-  	      //fprintf(fpout, "<Binary Blob contains %d Bytes>", TagHead.TagValue);
   	      // only seek the Data, if one needs the data, it can be loaded here
   	      fseek(fpin, (long)TagHead.TagValue, SEEK_CUR);
   	      break;
@@ -770,7 +761,6 @@ int main (int argc, char* argv[])
   	  }
   	}
   	while((strncmp(TagHead.Ident, FileTagEnd, sizeof(FileTagEnd))));
-  	//fprintf(fpout, "\n-----------------------\n");
 	// End Header loading
 
  	 // TTTR Record type
@@ -881,7 +871,10 @@ int main (int argc, char* argv[])
         			//if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}		
         			basicpoint = i;
         			investigationpoint = i+1;
-            	deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
+            		deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
+            		BchannelID = inputvector1.at(basicpoint);
+            		//Fill timestamphistogram (only during positive time range)
+            		timestamphistogram[BchannelID]->Fill((inputvector3.at(basicpoint)/250)%8);
         		
         			while (deltat < taubeg && investigationpoint < partinputs-1)//Find start photon, only for taubeg > 0
         			{   
@@ -891,11 +884,12 @@ int main (int argc, char* argv[])
         		
         			while (deltat < tauend && investigationpoint < partinputs-1)
         			{
-            		  BchannelID = inputvector1.at(basicpoint); IchannelID = inputvector1.at(investigationpoint);
+            		  	//BchannelID = inputvector1.at(basicpoint);
+            		  	IchannelID = inputvector1.at(investigationpoint);
             			allchannelhistogram[BchannelID][IchannelID]->Fill(deltat);
 
             			investigationpoint ++;
-            		  deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
+            		  	deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
         			}
 
         			endlinetotime = i;//If it did not stop before now the endline is set to the last entry.
@@ -921,6 +915,7 @@ int main (int argc, char* argv[])
     		        basicpoint = i;
     		        investigationpoint = i-1;		
     		        deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
+    		        BchannelID = inputvector1.at(basicpoint);
 		
     		        while (deltat > tauend && investigationpoint > 0)//Find start Photon, only for tauend < 0
     		        {
@@ -930,7 +925,8 @@ int main (int argc, char* argv[])
 		
     		        while (deltat > taubeg && investigationpoint > 0)
     		        {
-    		            BchannelID = inputvector1.at(basicpoint); IchannelID = inputvector1.at(investigationpoint);		
+    		            //BchannelID = inputvector1.at(basicpoint);
+    		            IchannelID = inputvector1.at(investigationpoint);		
     		            allchannelhistogram[BchannelID][IchannelID]->Fill(deltat);
 		
     		            investigationpoint --;
@@ -985,7 +981,21 @@ int main (int argc, char* argv[])
 	  std::cout << "--------------------------------------------" << std::endl;
     
   
-    
+  system("mkdir results");
+  //Infofile
+  ofstream info;
+  info.open("results/infos.txt");
+   //fileout << fixed;
+   info << "File: " << argv[1] << "\n";
+   info << "---------------------------------------------------\n";
+   info << "Starttime: " << 1e-12 * startmeastime << " s\t\tEndtime: " << 1e-12 * endmeastime << " s\n";
+   info << "Effective Measurement time : " << 1e-12 * meastime << " s\n";
+   info << "Channel\tCounts\t\tRate (MHz)\n";
+   info << "0\t" << ccounts[0] << "\t" << c0_rate << "\n";
+   info << "1\t" << ccounts[1] << "\t" << c1_rate << "\n";
+   info << "Total counts:\t" << ccounts[0] + ccounts[1] << "\n";
+   info << "Ratio 0:1 : " << rateratio << "\t1:0 : " << invrateratio << "\n";
+  info.close();
 
     
 
@@ -1229,9 +1239,10 @@ int main (int argc, char* argv[])
 
           TCanvas *timestampcanvas = new TCanvas("timestamp","timestamp",700,500);
           timestampcanvas->SetFillColor(29); timestampcanvas->SetGrid(); timestampcanvas->Divide(2,1);
-          timestampcanvas->cd(1); timestamphistogram_c0->Draw();
-          timestampcanvas->cd(2); timestamphistogram_c1->Draw();
+          timestampcanvas->cd(1); timestamphistogram[0]->Draw();
+          timestampcanvas->cd(2); timestamphistogram[1]->Draw();
           timestampcanvas->Modified(); timestampcanvas->Update();
+          timestampcanvas->SaveAs("results/ts.root");
       
           TCanvas * CorrelationCanvas = new TCanvas("CorrelationCanvas", "Correlations", 700, 500);
           CorrelationCanvas->SetFillColor(29); CorrelationCanvas->SetGrid(); CorrelationCanvas->Divide(2,2);
@@ -1246,6 +1257,7 @@ int main (int argc, char* argv[])
               }
           }
           CorrelationCanvas->Modified(); CorrelationCanvas->Update();
+          CorrelationCanvas->SaveAs("results/Events.root");
       
           TCanvas * g2Canvas = new TCanvas("g_{2}-Canvas", "g_{2}-functions", 700, 500);
           g2Canvas->SetFillColor(29); g2Canvas->SetGrid(); g2Canvas->Divide(2,2);
@@ -1259,6 +1271,7 @@ int main (int argc, char* argv[])
               }
           }
           g2Canvas->Modified(); g2Canvas->Update();
+          g2Canvas->SaveAs("results/g2.root");
       
           TCanvas * FFTCanvas = new TCanvas("fftCanvas", "FFT-Canvas", 700, 500);
           FFTCanvas->SetFillColor(29); FFTCanvas->SetGrid(); FFTCanvas->Divide(2,2);
@@ -1271,6 +1284,7 @@ int main (int argc, char* argv[])
                 }
           }
           FFTCanvas->Modified(); FFTCanvas->Update();
+          FFTCanvas->SaveAs("results/FFT.root");
 
     TheCorrelationCanvas.Run();        
     //################ Application for the canvases ################\\
