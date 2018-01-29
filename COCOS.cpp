@@ -455,27 +455,23 @@ int main (int argc, char* argv[])
     calibrationmodestring[2] = "write";
 
     int calibrationmode = 0;
+    std::string calibfilename = "Calibration.txt";
 
 
-    std::cout << "\nStandard-Settings:" << std::endl;
     settingsmarker:;
+
+	  std::cout << "\n\n\n\nWhat do you want to do/change?" << std::endl;
     std::cout << "#################################################" << std::endl;
-    //std::cout << "\tStart inputline:\t" << startinput << "\n\tEnd inputline:\t\t" << inputlines << std::endl;
-    //std::cout << "\tLimit inputlines?:\t" << linelimit << std::endl;
-    std::cout << "\tStart evaluation time:\t" << 1e-12 * startevaltime << " s\n\tEnd evaluation time:\t" << 1e-12 * endevaltime << " s" << std::endl;
-    std::cout << "\tLimit evaluation time?:\t" << timelimitation << std::endl;
-
-    std::cout << "Output:\n\tStarttime (ps):\t\t" << taubeg << "\n\tEndtime (ps):\t\t" << tauend << "\n\tNumber of bins:\t\t" << binnumber << "\t-> binwidth = " << 1.*(tauend - taubeg)/(1.*binnumber) << " ps" << std::endl;
-    
-    std::cout << "\nCalibration mode:\t\t" << calibrationmodestring[calibrationmode] << std::endl;
-    std::cout << "##################################################" << std::endl;
-
-	  std::cout << "\n\nWhat do you want to do/change?" << std::endl;
-        std::cout << "\nStart evaluation time\t[is]\nEnd evaluation time\t[ie]\nSet input limitation\t[sl]\nStarttime\t\t[ts]\nEndtime\t\t\t[te]\nNumber of bins\t\t[nb]\nChange calibration mode\t[cm]\nContinue\t\t[c]\nType it here:\t";
+        std::cout << "\nStart evaluation time\t[is]\t" << 1e-12 * startevaltime << " s\nEnd evaluation time\t[ie]\t" << 1e-12 * endevaltime << " s\nSet input limitation\t[sl]\t" << timelimitation << std::endl;
+        std::cout << "\nStarttime (ps)\t\t[ts]\t" << taubeg << "\nEndtime   (ps)\t\t[te]\t" << tauend << "\nNumber of bins\t\t[nb]\t" << binnumber << "\t-> binwidth = " << 1.*(tauend - taubeg)/(1.*binnumber) << " ps" << std::endl;
+        std::cout << "\nChange calibration mode\t[cm]\t" << calibrationmodestring[calibrationmode] << "\nCalibration file name\t[cf]\t" << calibfilename << std::endl;
+        std::cout << "\nContinue\t\t[c]" << std::endl;
+        std::cout << "##################################################" << std::endl;
+        std::cout << "\nType it here:\t";
         std::string whatchangestring; cin >> whatchangestring;
-        std::cout << "\n\n\n" << std::endl;
+        std::cout << "\n" << std::endl;
 
-        if (whatchangestring != "is" && whatchangestring != "ie" && whatchangestring != "ts" && whatchangestring != "te" && whatchangestring != "nb" && whatchangestring !="sl" && whatchangestring !="c" && whatchangestring != "cm")
+        if (whatchangestring != "is" && whatchangestring != "ie" && whatchangestring != "ts" && whatchangestring != "te" && whatchangestring != "nb" && whatchangestring !="sl" && whatchangestring !="c" && whatchangestring != "cm" && whatchangestring != "cf")
         {
             std::cout << "\n\n\nWhat do you mean? Please enter again." << std::endl;
             goto settingsmarker;
@@ -524,6 +520,12 @@ int main (int argc, char* argv[])
             std::string cmstring; cin >> cmstring;
             calibrationmode = std::atoi(cmstring.c_str());
         }
+        if (whatchangestring == "cf")
+        {
+            std::cout << "Enter calibration file name (incl. ending):\t";
+            std::string cfstring; cin >> cfstring;
+            calibfilename = cfstring;
+        }
         if (whatchangestring == "c")
         {
         	goto settingsdone;
@@ -555,7 +557,7 @@ int main (int argc, char* argv[])
     std::ifstream infile;
     if (calibrationmode == 1)
     {
-        infile.open("Calibration.txt");
+        infile.open(calibfilename.c_str());
         while (std::getline(infile,line))
         {
             sscanf(line.c_str(),"%i\t%lf\t%lf\t%lf\t%lf", &calTIME, &cal00, &cal01, &cal10, &cal11);
@@ -865,8 +867,8 @@ int main (int argc, char* argv[])
     				if (timelimitation == true && inputvector3.at(i) < startevaltime){startlinetotime ++; goto skipevalp;}
     				else if (startmeastimeout == false){startmeastime = inputvector3.at(i); startmeastimeout = true;}
     				ccounts[inputvector1.at(i)] ++;
-    				//End evaluation complete if actual time is larger than the upper adjusted timelimit:
-    				if (timelimitation == true && inputvector3.at(i) > endevaltime){endlinetotime = i; goto closep;}
+    				//End evaluation complete if current time is larger than the upper adjusted timelimit:
+    				if (timelimitation == true && inputvector3.at(i) > endevaltime){endlinetotime = i; if(taubeg>0){goto close;}; goto closep;}
 
         			//if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}		
         			basicpoint = i;
@@ -896,8 +898,8 @@ int main (int argc, char* argv[])
         			endmeastime = inputvector3.at(i);//Can be always done, as it always increases
         			skipevalp:;//Marker for not evaluating
     			}
-			}
-			closep:;
+			  }
+			  closep:;
 
 
     		if (taubeg < 0)//Fill negative time-range - do everything backwards
@@ -907,6 +909,7 @@ int main (int argc, char* argv[])
     			{
     				//Pass ranges that are not within the adjusted evaluation time range:
     				if (timelimitation == true && inputvector3.at(i) < startevaltime){goto skipevaln;}
+            if (tauend <= 0){ccounts[inputvector1.at(i)] ++;}//Count events as well when only negative time range
     				//End evaluation completely if actual time is larger than the upper adjusted timelimit:
     				if (timelimitation == true && inputvector3.at(i) > endevaltime){goto close;}
 
@@ -1228,7 +1231,7 @@ int main (int argc, char* argv[])
     {
       ofstream fileout;
       fileout << setprecision(15);
-      fileout.open("Calibration.txt");
+      fileout.open(calibfilename.c_str());
       //fileout << fixed;
       for (int b=0; b<nbins; b++)
       {
