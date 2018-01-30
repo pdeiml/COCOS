@@ -461,6 +461,7 @@ int main (int argc, char* argv[])
     //Get settings from settings file
     std::ifstream settingsfile;
     std::vector<int> settingsvector;
+    std::vector<std::string> forcalibfilename;
     std:string settingssub; std::string settingsstring;
     settingsfile.open("settings.txt");
     while (std::getline(settingsfile,settingsstring))
@@ -469,11 +470,14 @@ int main (int argc, char* argv[])
       settingssub = settingsstring.substr(settingsstring.find(" ")+1);
       //std::cout << settingssub << std::endl;
       settingsvector.push_back(std::atof(settingssub.c_str()));
-      endsettings:;
     }
-    
-    calibfilename = settingsstring;
+    endsettings:;
     settingsfile.close();
+    settingsfile.open("settings.txt");
+    while (std::getline(settingsfile,settingsstring))
+    {
+      forcalibfilename.push_back(settingsstring);
+    }
 
     startevaltime  =  1e12 * settingsvector.at(0);
     endevaltime    =  1e12 * settingsvector.at(1);
@@ -481,7 +485,8 @@ int main (int argc, char* argv[])
     taubeg         =  settingsvector.at(3);
     tauend         =  settingsvector.at(4);
     binnumber      =  settingsvector.at(5);
-    calibrationmode = settingsvector.at(6);
+    calibrationmode=  settingsvector.at(6);
+    calibfilename  =  forcalibfilename.at(8);
 
     std::cout << "#################################################" << std::endl;
     //std::cout << "\tStart inputline:\t" << startinput << "\n\tEnd inputline:\t\t" << inputlines << std::endl;
