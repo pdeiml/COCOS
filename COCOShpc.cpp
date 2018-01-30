@@ -455,9 +455,9 @@ int main (int argc, char* argv[])
     calibrationmodestring[2] = "write";
 
     int calibrationmode = 0;
+    std::string calibfilename = "Calibration.txt";
 
 
-    
     //Get settings from settings file
     std::ifstream settingsfile;
     std::vector<int> settingsvector;
@@ -469,8 +469,10 @@ int main (int argc, char* argv[])
       settingssub = settingsstring.substr(settingsstring.find(" ")+1);
       //std::cout << settingssub << std::endl;
       settingsvector.push_back(std::atof(settingssub.c_str()));
+      endsettings:;
     }
-    endsettings:;
+    
+    calibfilename = settingsstring;
     settingsfile.close();
 
     startevaltime  =  1e12 * settingsvector.at(0);
@@ -490,12 +492,8 @@ int main (int argc, char* argv[])
     std::cout << "Output:\n\tStarttime (ps):\t\t" << taubeg << "\n\tEndtime (ps):\t\t" << tauend << "\n\tNumber of bins:\t\t" << binnumber << "\t-> binwidth = " << 1.*(tauend - taubeg)/(1.*binnumber) << " ps" << std::endl;
     
     std::cout << "\nCalibration mode:\t\t" << calibrationmodestring[calibrationmode] << std::endl;
+    std::cout << "Calibration file name\t\t" << calibfilename << std::endl;
     std::cout << "##################################################" << std::endl;
-
-    /*for (int i=0; i<settingsvector.size(); i++)
-    {
-      std::cout << i << "\t" << settingsvector.at(i) << std::endl;
-    }*/
 
 	//############# Ende manuelles Einstellen-Zeug #############//
 	//##########################################################//
@@ -520,7 +518,7 @@ int main (int argc, char* argv[])
     std::ifstream infile;
     if (calibrationmode == 1)
     {
-        infile.open("Calibration.txt");
+        infile.open(calibfilename.c_str());
         while (std::getline(infile,line))
         {
             sscanf(line.c_str(),"%i\t%lf\t%lf\t%lf\t%lf", &calTIME, &cal00, &cal01, &cal10, &cal11);
@@ -830,8 +828,8 @@ int main (int argc, char* argv[])
     				if (timelimitation == true && inputvector3.at(i) < startevaltime){startlinetotime ++; goto skipevalp;}
     				else if (startmeastimeout == false){startmeastime = inputvector3.at(i); startmeastimeout = true;}
     				ccounts[inputvector1.at(i)] ++;
-    				//End evaluation complete if actual time is larger than the upper adjusted timelimit:
-    				if (timelimitation == true && inputvector3.at(i) > endevaltime){endlinetotime = i; goto closep;}
+    				//End evaluation complete if current time is larger than the upper adjusted timelimit:
+    				if (timelimitation == true && inputvector3.at(i) > endevaltime){endlinetotime = i; if(taubeg>0){goto close;}; goto closep;}
 
         			//if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}		
         			basicpoint = i;
@@ -861,8 +859,8 @@ int main (int argc, char* argv[])
         			endmeastime = inputvector3.at(i);//Can be always done, as it always increases
         			skipevalp:;//Marker for not evaluating
     			}
-			}
-			closep:;
+			  }
+			  closep:;
 
 
     		if (taubeg < 0)//Fill negative time-range - do everything backwards
@@ -872,6 +870,7 @@ int main (int argc, char* argv[])
     			{
     				//Pass ranges that are not within the adjusted evaluation time range:
     				if (timelimitation == true && inputvector3.at(i) < startevaltime){goto skipevaln;}
+            if (tauend <= 0){ccounts[inputvector1.at(i)] ++;}//Count events as well when only negative time range
     				//End evaluation completely if actual time is larger than the upper adjusted timelimit:
     				if (timelimitation == true && inputvector3.at(i) > endevaltime){goto close;}
 
@@ -942,30 +941,25 @@ int main (int argc, char* argv[])
     std::cout << "Channel\tCounts\t\tRate (MHz)" << std::endl;
     std::cout << "0\t" << ccounts[0] << "\t" << c0_rate << std::endl;
     std::cout << "1\t" << ccounts[1] << "\t" << c1_rate << std::endl;
-	std::cout << "Ratio 0:1 : " << rateratio << "\t1:0 : " << invrateratio << std::endl;
-	std::cout << "--------------------------------------------" << std::endl;
-
-
-
-	system("mkdir results");
-	//Infofile
+	  std::cout << "Ratio 0:1 : " << rateratio << "\t1:0 : " << invrateratio << std::endl;
+	  std::cout << "--------------------------------------------" << std::endl;
+    
+  
+  system("mkdir results");
+  //Infofile
   ofstream info;
   info.open("results/infos.txt");
    //fileout << fixed;
    info << "File: " << argv[1] << "\n";
    info << "---------------------------------------------------\n";
-	 info << "Starttime: " << 1e-12 * startmeastime << " s\t\tEndtime: " << 1e-12 * endmeastime << " s\n";
-	 info << "Effective Measurement time : " << 1e-12 * meastime << " s\n";
-	 info << "Channel\tCounts\t\tRate (MHz)\n";
-	 info << "0\t" << ccounts[0] << "\t" << c0_rate << "\n";
-	 info << "1\t" << ccounts[1] << "\t" << c1_rate << "\n";
-	 info << "Total counts:\t" << ccounts[0] + ccounts[1] << "\n";
-	 info << "Ratio 0:1 : " << rateratio << "\t1:0 : " << invrateratio << "\n";
+   info << "Starttime: " << 1e-12 * startmeastime << " s\t\tEndtime: " << 1e-12 * endmeastime << " s\n";
+   info << "Effective Measurement time : " << 1e-12 * meastime << " s\n";
+   info << "Channel\tCounts\t\tRate (MHz)\n";
+   info << "0\t" << ccounts[0] << "\t" << c0_rate << "\n";
+   info << "1\t" << ccounts[1] << "\t" << c1_rate << "\n";
+   info << "Total counts:\t" << ccounts[0] + ccounts[1] << "\n";
+   info << "Ratio 0:1 : " << rateratio << "\t1:0 : " << invrateratio << "\n";
   info.close();
-
-    
-  
-    
 
     
 
@@ -1009,7 +1003,8 @@ int main (int argc, char* argv[])
             bindiff = maxbin - minbin;
             maxx = allchannelhistogram[bas][inv]->GetMaximumBin();
 
-            pol0fit[bas][inv] = new TF1("Pol-0-Fit","pol0", taubeg, tauend);
+            if (bas != inv){pol0fit[bas][inv] = new TF1("Pol-0-Fit","pol0", taubeg, tauend);}
+            if (bas == inv){pol0fit[bas][inv] = new TF1("Pol-0-Fit","pol0", taubeg + 3*(tauend-taubeg)/4, tauend);}
             pol0fit[bas][inv]->SetParName(0,"offfset"); //pol0fit[bas][inv]->SetParameter(0, allchannelhistogram[bas][inv]->GetBinContent(0));
 
             allchannelhistogram[bas][inv]->Fit(pol0fit[bas][inv], "0QR");
@@ -1029,7 +1024,7 @@ int main (int argc, char* argv[])
 
 
     //Create g2-function: Divide events by the normalisation by pol0-fit
-    double g2_max[2][2];//Will become maximum value of arraycolumn
+    double g2_max[2][2], g2_min[2][2];//Will become maximum and minimum values of arraycolumn
     int g2_max_x[2][2];//X-Bin-Value of maximum value
     TGraph *g2[2][2];
     TGraphErrors *g2witherrors[2][2];
@@ -1061,12 +1056,36 @@ int main (int argc, char* argv[])
             }
         }
     }
-
-
     g2[0][0]->SetTitle("g_{2}-function channel 0 to channel 0");
     g2[0][1]->SetTitle("g_{2}-function channel 0 to channel 1");
     g2[1][0]->SetTitle("g_{2}-function channel 1 to channel 0");
     g2[1][1]->SetTitle("g_{2}-function channel 1 to channel 1");
+
+    //g2-Distribution histogramm
+    double g2ymax, g2ymin;
+    TH1D * g2disthisto[2][2];
+    for (int bas=0; bas<2; bas++)
+    {
+    	for (int inv=0; inv<2; inv++)
+    	{
+    		g2ymax = correlationarray[0][2][bas][inv]; g2ymin = correlationarray[0][2][bas][inv];
+    		for (int i=0; i<nbins; i++)
+    		{
+    			if (correlationarray[i][2][bas][inv] > g2ymax){g2ymax = correlationarray[i][2][bas][inv];}
+    			if (correlationarray[i][2][bas][inv] < g2ymin){g2ymin = correlationarray[i][2][bas][inv];}
+    		}
+    		g2disthisto[bas][inv] = new TH1D("g2dist","g2-Distribution", (g2ymax - g2ymin)/0.001, g2ymin, g2ymax);
+    		std::cout << "nbins: " << (g2ymax - g2ymin)/0.001 << std::endl;
+    		for (int i=0; i<nbins; i++)
+    		{
+    			g2disthisto[bas][inv]->Fill(correlationarray[i][2][bas][inv]);
+    		}
+    	}
+    }
+    g2disthisto[0][0]->SetTitle("g_{2}-distribution channel 0 to channel 0");
+    g2disthisto[0][1]->SetTitle("g_{2}-distribution channel 0 to channel 1");
+    g2disthisto[1][0]->SetTitle("g_{2}-distribution channel 1 to channel 0");
+    g2disthisto[1][1]->SetTitle("g_{2}-distribution channel 1 to channel 1");
 
 
     //FFT of (g2-)histogram
@@ -1173,7 +1192,7 @@ int main (int argc, char* argv[])
     {
       ofstream fileout;
       fileout << setprecision(15);
-      fileout.open("Calibration.txt");
+      fileout.open(calibfilename.c_str());
       //fileout << fixed;
       for (int b=0; b<nbins; b++)
       {
@@ -1188,9 +1207,6 @@ int main (int argc, char* argv[])
     //system("afplay /System/Library/Sounds/Glass.aiff");
     //system("afplay /System/Library/Sounds/Glass.aiff");  
 
-    //std::cout << "Enter anything to continue  ";
-    //std::string unusedstring;
-    //cin >>  unusedstring;
 
     int whichpad[2][2];//Assings histgorams etc to canvas position
     whichpad[0][0] = 1;
@@ -1207,12 +1223,12 @@ int main (int argc, char* argv[])
 
     //TApplication TheCorrelationCanvas("TCC",0,0);
 
-          TCanvas *timestampcanvas = new TCanvas("timestamp","timestamp",700,500);
+          /*TCanvas *timestampcanvas = new TCanvas("timestamp","timestamp",700,500);
           timestampcanvas->SetFillColor(29); timestampcanvas->SetGrid(); timestampcanvas->Divide(2,1);
           timestampcanvas->cd(1); timestamphistogram[0]->Draw();
           timestampcanvas->cd(2); timestamphistogram[1]->Draw();
           timestampcanvas->Modified(); timestampcanvas->Update();
-          timestampcanvas->SaveAs("results/ts.root");
+          timestampcanvas->SaveAs("results/ts.root");*/
       
           TCanvas * CorrelationCanvas = new TCanvas("CorrelationCanvas", "Correlations", 700, 500);
           CorrelationCanvas->SetFillColor(29); CorrelationCanvas->SetGrid(); CorrelationCanvas->Divide(2,2);
@@ -1242,6 +1258,19 @@ int main (int argc, char* argv[])
           }
           g2Canvas->Modified(); g2Canvas->Update();
           g2Canvas->SaveAs("results/g2.root");
+
+          TCanvas * g2distCanvas = new TCanvas("g_{2}-dist-Canvas", "g_{2}-Distributions", 700, 500);
+          g2distCanvas->SetFillColor(29); g2distCanvas->SetGrid(); g2distCanvas->Divide(2,2);
+          for (int bas=0; bas<2; bas++)
+          {
+              for (int inv=0; inv<2; inv++)
+              {
+                  g2distCanvas->cd(whichpad[bas][inv]);
+                  g2disthisto[bas][inv]->Draw();
+              }
+          }
+          g2distCanvas->Modified(); g2distCanvas->Update();
+          g2distCanvas->SaveAs("results/g2dist.root");
       
           TCanvas * FFTCanvas = new TCanvas("fftCanvas", "FFT-Canvas", 700, 500);
           FFTCanvas->SetFillColor(29); FFTCanvas->SetGrid(); FFTCanvas->Divide(2,2);
