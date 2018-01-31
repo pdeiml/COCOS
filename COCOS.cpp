@@ -133,6 +133,8 @@ long long endlinetotime = 0;//Will find out the end line to the adjusted endtime
 
 
 
+
+
 //############# Wichtig: GotPhoton-Funktion #############//
 //Got Photon
 //  TimeTag: Raw TimeTag from Record * Globalresolution = Real Time arrival of Photon
@@ -546,6 +548,8 @@ int main (int argc, char* argv[])
     taubeg = taubeg - (binwidth/2);
     tauend = tauend - (binwidth/2);
 
+    bool evaluating = false;//Check if we are evaluation at the moment
+
 
 
     //Get calibration data
@@ -853,92 +857,101 @@ int main (int argc, char* argv[])
     	if (eventcounter >= 1e8 || RecNum >= (NumRecords-1))//Jezt kommt die ganze Auswertung einer 10^8-Reihe!
     	{
     		std::cout << "EVC: " << eventcounter << "  RecNum " << RecNum << std::endl;
-    		//###############################################//
-    		std::cout << "Space-Time-Evaluation:" << std::endl;
-    		//###############################################//
-    		long long partinputs = inputvector0.size();
 
-    		if (tauend > 0)//Fill positive time-range
-    		{
-    			std::cout << ">Positive time range..." << std::endl;
-    			for (long long i=0; i<partinputs-1; i++)
-    			{
-    				//Pass ranges that are not within the adjusted evaluation time range:
-    				if (timelimitation == true && inputvector3.at(i) < startevaltime){startlinetotime ++; goto skipevalp;}
-    				else if (startmeastimeout == false){startmeastime = inputvector3.at(i); startmeastimeout = true;}
-    				ccounts[inputvector1.at(i)] ++;
-    				//End evaluation complete if current time is larger than the upper adjusted timelimit:
-    				if (timelimitation == true && inputvector3.at(i) > endevaltime){endlinetotime = i; if(taubeg>0){goto close;}; goto closep;}
+        //Evaluate only if last time is not before start evaluation time
+        if (inputvector3.back() >= startevaltime)
+        {
+                      //###############################################//
+                     std::cout << "Space-Time-Evaluation:" << std::endl;
+                     //###############################################//
+                     long long partinputs = inputvector0.size();
+              
+                     if (tauend > 0)//Fill positive time-range
+                     {
+                       std::cout << ">Positive time range..." << std::endl;
+                       for (long long i=0; i<partinputs-1; i++)
+                       {
+                         //Pass ranges that are not within the adjusted evaluation time range:
+                         if (timelimitation == true && inputvector3.at(i) < startevaltime){startlinetotime ++; goto skipevalp;}
+                         else if (startmeastimeout == false){startmeastime = inputvector3.at(i); startmeastimeout = true;}
+                         ccounts[inputvector1.at(i)] ++;
+                         //End evaluation complete if current time is larger than the upper adjusted timelimit:
+                         if (timelimitation == true && inputvector3.at(i) > endevaltime){endlinetotime = i; if(taubeg>0){goto close;}; goto closep;}
+              
+                           //if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}
+                         
+                           basicpoint = i;
+                           investigationpoint = i+1;
+                           deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
+                           BchannelID = inputvector1.at(basicpoint);
+                           //Fill timestamphistogram (only during positive time range)
+                           timestamphistogram[BchannelID]->Fill((inputvector3.at(basicpoint)/250)%8);
+                         
+                           while (deltat < taubeg && investigationpoint < partinputs-1)//Find start photon, only for taubeg > 0
+                           {   
+                               investigationpoint ++;
+                                 deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
+                           }
+                         
+                           while (deltat < tauend && investigationpoint < partinputs-1)
+                           {
+                                 //BchannelID = inputvector1.at(basicpoint);
+                                 IchannelID = inputvector1.at(investigationpoint);
+                               allchannelhistogram[BchannelID][IchannelID]->Fill(deltat);
+              
+                               investigationpoint ++;
+                                 deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
+                           }
+              
+                           endlinetotime = i;//If it did not stop before now the endline is set to the last entry.
+                           endmeastime = inputvector3.at(i);//Can be always done, as it always increases
+                           skipevalp:;//Marker for not evaluating
+                       }
+                     }
+                     closep:;
+              
+              
+                     if (taubeg < 0)//Fill negative time-range - do everything backwards
+                     {
+                       std::cout << ">Negative time range..." << std::endl;
+                       for (long long i=1; i<partinputs; i++)//Start with i=1 as i-1=0
+                       {
+                         //Pass ranges that are not within the adjusted evaluation time range:
+                         if (timelimitation == true && inputvector3.at(i) < startevaltime){goto skipevaln;}
+                         if (tauend <= 0){ccounts[inputvector1.at(i)] ++;}//Count events as well when only negative time range
+                         //End evaluation completely if actual time is larger than the upper adjusted timelimit:
+                         if (timelimitation == true && inputvector3.at(i) > endevaltime){goto close;}
+              
+              
+                           //if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}
+                             
+                             basicpoint = i;
+                             investigationpoint = i-1;   
+                             deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
+                             BchannelID = inputvector1.at(basicpoint);
+                  
+                             while (deltat > tauend && investigationpoint > 0)//Find start Photon, only for tauend < 0
+                             {
+                                 investigationpoint --;
+                                 deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
+                             }
+                  
+                             while (deltat > taubeg && investigationpoint > 0)
+                             {
+                                 //BchannelID = inputvector1.at(basicpoint);
+                                 IchannelID = inputvector1.at(investigationpoint);   
+                                 allchannelhistogram[BchannelID][IchannelID]->Fill(deltat);
+                  
+                                 investigationpoint --;
+                                 deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
+                             }
+                             skipevaln:;//Marker for not evaluating
+                       }
+                     }
+                     closen:;
+        }
 
-        			//if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}		
-        			basicpoint = i;
-        			investigationpoint = i+1;
-            		deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
-            		BchannelID = inputvector1.at(basicpoint);
-            		//Fill timestamphistogram (only during positive time range)
-            		timestamphistogram[BchannelID]->Fill((inputvector3.at(basicpoint)/250)%8);
-        		
-        			while (deltat < taubeg && investigationpoint < partinputs-1)//Find start photon, only for taubeg > 0
-        			{   
-            			investigationpoint ++;
-            		    deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
-        			}
-        		
-        			while (deltat < tauend && investigationpoint < partinputs-1)
-        			{
-            		  	//BchannelID = inputvector1.at(basicpoint);
-            		  	IchannelID = inputvector1.at(investigationpoint);
-            			allchannelhistogram[BchannelID][IchannelID]->Fill(deltat);
-
-            			investigationpoint ++;
-            		  	deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
-        			}
-
-        			endlinetotime = i;//If it did not stop before now the endline is set to the last entry.
-        			endmeastime = inputvector3.at(i);//Can be always done, as it always increases
-        			skipevalp:;//Marker for not evaluating
-    			}
-			  }
-			  closep:;
-
-
-    		if (taubeg < 0)//Fill negative time-range - do everything backwards
-    		{
-    			std::cout << ">Negative time range..." << std::endl;
-    			for (long long i=1; i<partinputs; i++)//Start with i=1 as i-1=0
-    			{
-    				//Pass ranges that are not within the adjusted evaluation time range:
-    				if (timelimitation == true && inputvector3.at(i) < startevaltime){goto skipevaln;}
-            if (tauend <= 0){ccounts[inputvector1.at(i)] ++;}//Count events as well when only negative time range
-    				//End evaluation completely if actual time is larger than the upper adjusted timelimit:
-    				if (timelimitation == true && inputvector3.at(i) > endevaltime){goto close;}
-
-
-    		    	//if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}
-    		        basicpoint = i;
-    		        investigationpoint = i-1;		
-    		        deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
-    		        BchannelID = inputvector1.at(basicpoint);
-		
-    		        while (deltat > tauend && investigationpoint > 0)//Find start Photon, only for tauend < 0
-    		        {
-    		            investigationpoint --;
-    		            deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
-    		        }
-		
-    		        while (deltat > taubeg && investigationpoint > 0)
-    		        {
-    		            //BchannelID = inputvector1.at(basicpoint);
-    		            IchannelID = inputvector1.at(investigationpoint);		
-    		            allchannelhistogram[BchannelID][IchannelID]->Fill(deltat);
-		
-    		            investigationpoint --;
-    		            deltat = inputvector3.at(investigationpoint) - inputvector3.at(basicpoint);
-    		        }
-    		        skipevaln:;//Marker for not evaluating
-    		    }
-    		}
-        closen:;
+    		
 
     		//Read out the startmeastime as first element of the inputvector, but only once!
     		//if (startmeastimeout == false){std::cout << "PPPPL: " << startlinetotime << std::endl; startmeastime = inputvector3.at(startlinetotime); startmeastimeout = true;}
