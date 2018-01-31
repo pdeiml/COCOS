@@ -29,7 +29,7 @@
 
 using namespace std;
 //Compile-Befehl auf mac mit g++:
-//g++ -o COCOShpc COCOShpc.cpp `root-config --cflags --glibs --ldflags` -L/usr/local/lib/root
+//g++ -o COCOS COCOS.cpp `root-config --cflags --glibs --ldflags` -L/usr/local/lib/root
 
 
 
@@ -458,47 +458,81 @@ int main (int argc, char* argv[])
     std::string calibfilename = "Calibration.txt";
 
 
-    //Get settings from settings file
-    std::ifstream settingsfile;
-    std::vector<int> settingsvector;
-    std::vector<std::string> forcalibfilename;
-    std:string settingssub; std::string settingsstring;
-    settingsfile.open("settings.txt");
-    while (std::getline(settingsfile,settingsstring))
-    {
-      if (settingsstring == "#end"){goto endsettings;}
-      settingssub = settingsstring.substr(settingsstring.find(" ")+1);
-      //std::cout << settingssub << std::endl;
-      settingsvector.push_back(std::atof(settingssub.c_str()));
-    }
-    endsettings:;
-    settingsfile.close();
-    settingsfile.open("settings.txt");
-    while (std::getline(settingsfile,settingsstring))
-    {
-      forcalibfilename.push_back(settingsstring);
-    }
+    settingsmarker:;
 
-    startevaltime  =  1e12 * settingsvector.at(0);
-    endevaltime    =  1e12 * settingsvector.at(1);
-    timelimitation =  settingsvector.at(2);
-    taubeg         =  settingsvector.at(3);
-    tauend         =  settingsvector.at(4);
-    binnumber      =  settingsvector.at(5);
-    calibrationmode=  settingsvector.at(6);
-    calibfilename  =  forcalibfilename.at(8);
-
+	  std::cout << "\n\n\n\nWhat do you want to do/change?" << std::endl;
     std::cout << "#################################################" << std::endl;
-    //std::cout << "\tStart inputline:\t" << startinput << "\n\tEnd inputline:\t\t" << inputlines << std::endl;
-    //std::cout << "\tLimit inputlines?:\t" << linelimit << std::endl;
-    std::cout << "\tStart evaluation time:\t" << 1e-12 * startevaltime << " s\n\tEnd evaluation time:\t" << 1e-12 * endevaltime << " s" << std::endl;
-    std::cout << "\tLimit evaluation time?:\t" << timelimitation << std::endl;
+        std::cout << "\nStart evaluation time\t[is]\t" << 1e-12 * startevaltime << " s\nEnd evaluation time\t[ie]\t" << 1e-12 * endevaltime << " s\nSet input limitation\t[sl]\t" << timelimitation << std::endl;
+        std::cout << "\nStarttime (ps)\t\t[ts]\t" << taubeg << "\nEndtime   (ps)\t\t[te]\t" << tauend << "\nNumber of bins\t\t[nb]\t" << binnumber << "\t-> binwidth = " << 1.*(tauend - taubeg)/(1.*binnumber) << " ps" << std::endl;
+        std::cout << "\nChange calibration mode\t[cm]\t" << calibrationmodestring[calibrationmode] << "\nCalibration file name\t[cf]\t" << calibfilename << std::endl;
+        std::cout << "\nContinue\t\t[c]" << std::endl;
+        std::cout << "##################################################" << std::endl;
+        std::cout << "\nType it here:\t";
+        std::string whatchangestring; cin >> whatchangestring;
+        std::cout << "\n" << std::endl;
 
-    std::cout << "Output:\n\tStarttime (ps):\t\t" << taubeg << "\n\tEndtime (ps):\t\t" << tauend << "\n\tNumber of bins:\t\t" << binnumber << "\t-> binwidth = " << 1.*(tauend - taubeg)/(1.*binnumber) << " ps" << std::endl;
-    
-    std::cout << "\nCalibration mode:\t\t" << calibrationmodestring[calibrationmode] << std::endl;
-    std::cout << "Calibration file name\t\t" << calibfilename << std::endl;
-    std::cout << "##################################################" << std::endl;
+        if (whatchangestring != "is" && whatchangestring != "ie" && whatchangestring != "ts" && whatchangestring != "te" && whatchangestring != "nb" && whatchangestring !="sl" && whatchangestring !="c" && whatchangestring != "cm" && whatchangestring != "cf")
+        {
+            std::cout << "\n\n\nWhat do you mean? Please enter again." << std::endl;
+            goto settingsmarker;
+        }
+        if (whatchangestring == "is")
+        {
+            std::cout << "Enter new Start of evaluation time [s]:\t";
+            std::string isstring; cin >> isstring;
+            startevaltime = 1e12 * std::atoi(isstring.c_str());
+            timelimitation = true;
+        }
+        if (whatchangestring == "ie")
+        {
+            std::cout << "Enter new end of evaluation time [s]:\t";
+            std::string instring; cin >> instring;
+            endevaltime = 1e12 * std::atoi(instring.c_str());
+            timelimitation = true;
+        }
+        if (whatchangestring == "ts")
+        {
+            std::cout << "Enter new starttime (ps):\t";
+            std::string tsstring; cin >> tsstring;
+            taubeg = std::atoi(tsstring.c_str());
+        }
+        if (whatchangestring == "te")
+        {
+            std::cout << "Enter new endtime (ps):\t";
+            std::string testring; cin >> testring;
+            tauend = std::atoi(testring.c_str());
+        }
+        if (whatchangestring == "nb")
+        {
+            std::cout << "Enter new number bins:\t";
+            std::string nbstring; cin >> nbstring;
+            binnumber = std::atoi(nbstring.c_str());
+        }
+        if (whatchangestring == "sl")
+        {
+            std::cout << "Enter new limitation criterion:\t";
+            std::string dfstring; cin >> dfstring;
+            timelimitation = std::atoi(dfstring.c_str());
+        }
+        if (whatchangestring == "cm")
+        {
+            std::cout << "Enter calibration mode number (0: none <> 1: read <> 2: write):\t";
+            std::string cmstring; cin >> cmstring;
+            calibrationmode = std::atoi(cmstring.c_str());
+        }
+        if (whatchangestring == "cf")
+        {
+            std::cout << "Enter calibration file name (incl. ending):\t";
+            std::string cfstring; cin >> cfstring;
+            calibfilename = cfstring;
+        }
+        if (whatchangestring == "c")
+        {
+        	goto settingsdone;
+        }
+        goto settingsmarker;
+
+	settingsdone:;
 
 	//############# Ende manuelles Einstellen-Zeug #############//
 	//##########################################################//
@@ -1212,6 +1246,9 @@ int main (int argc, char* argv[])
     //system("afplay /System/Library/Sounds/Glass.aiff");
     //system("afplay /System/Library/Sounds/Glass.aiff");  
 
+    std::cout << "Enter anything to continue  ";
+    std::string unusedstring;
+    cin >>  unusedstring;
 
     int whichpad[2][2];//Assings histgorams etc to canvas position
     whichpad[0][0] = 1;
@@ -1226,7 +1263,7 @@ int main (int argc, char* argv[])
     //##############################################################\\
     //################ APPLICATION FOR THE CANVASES ################\\
 
-    //TApplication TheCorrelationCanvas("TCC",0,0);
+    TApplication TheCorrelationCanvas("TCC",0,0);
 
           /*TCanvas *timestampcanvas = new TCanvas("timestamp","timestamp",700,500);
           timestampcanvas->SetFillColor(29); timestampcanvas->SetGrid(); timestampcanvas->Divide(2,1);
@@ -1290,7 +1327,7 @@ int main (int argc, char* argv[])
           FFTCanvas->Modified(); FFTCanvas->Update();
           FFTCanvas->SaveAs("results/FFT.root");
 
-    //TheCorrelationCanvas.Run();        
+    TheCorrelationCanvas.Run();        
     //################ Application for the canvases ################\\
     //##############################################################\\
 
