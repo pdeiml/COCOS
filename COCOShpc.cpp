@@ -1008,8 +1008,8 @@ int main (int argc, char* argv[])
             bindiff = maxbin - minbin;
             maxx = allchannelhistogram[bas][inv]->GetMaximumBin();
 
-            if (bas != inv){pol0fit[bas][inv] = new TF1("Pol-0-Fit","pol0", taubeg, tauend);}
-            if (bas == inv){pol0fit[bas][inv] = new TF1("Pol-0-Fit","pol0", taubeg + 3*(tauend-taubeg)/4, tauend);}
+            //pol0fit[bas][inv] = new TF1("Pol-0-Fit","pol0", taubeg, tauend);
+            pol0fit[bas][inv] = new TF1("Pol-0-Fit","pol0", taubeg + 3*(tauend-taubeg)/4, tauend);
             pol0fit[bas][inv]->SetParName(0,"offfset"); //pol0fit[bas][inv]->SetParameter(0, allchannelhistogram[bas][inv]->GetBinContent(0));
 
             allchannelhistogram[bas][inv]->Fit(pol0fit[bas][inv], "0QR");
