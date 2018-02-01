@@ -449,7 +449,8 @@ int main (int argc, char* argv[])
     int taubeg = -250e3;
     int tauend =  250e3;
     int binnumber = 2000;
-    	
+
+   	
 
 
 
@@ -566,6 +567,11 @@ int main (int argc, char* argv[])
     if (calibrationmode == 1)
     {
         infile.open(calibfilename.c_str());
+        if (!infile) 
+        {
+            std::cout << "Unable to open file Kalibration file. Please make sure it exists!" << std::endl;
+            exit(1);   // call system to stop
+        }
         while (std::getline(infile,line))
         {
             sscanf(line.c_str(),"%i\t%lf\t%lf\t%lf\t%lf", &calTIME, &cal00, &cal01, &cal10, &cal11);
@@ -803,7 +809,7 @@ int main (int argc, char* argv[])
      goto close;
     }
 
-    unsigned int TTTRRecord;  
+    unsigned int TTTRRecord;
     std::cout << "Total number of records of the file:\t" << NumRecords << std::endl;
 
     //############# Ende wieder jede Menge Code aus dem ptu -> txt - file #############\\
