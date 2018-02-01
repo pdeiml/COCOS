@@ -473,11 +473,6 @@ int main (int argc, char* argv[])
     }
     endsettings:;
     settingsfile.close();
-    settingsfile.open("settings.txt");
-    while (std::getline(settingsfile,settingsstring))
-    {
-      forcalibfilename.push_back(settingsstring);
-    }
 
     startevaltime  =  1e12 * settingsvector.at(0);
     endevaltime    =  1e12 * settingsvector.at(1);
@@ -486,7 +481,22 @@ int main (int argc, char* argv[])
     tauend         =  settingsvector.at(4);
     binnumber      =  settingsvector.at(5);
     calibrationmode=  settingsvector.at(6);
-    calibfilename  =  forcalibfilename.at(8);
+
+    if (calibrationmode == 1 || calibrationmode == 2)
+    {
+      settingsfile.open("settings.txt");
+      while (std::getline(settingsfile,settingsstring))
+      {
+        forcalibfilename.push_back(settingsstring);
+      }
+      if (forcalibfilename.size() < 9){std::cout << "Could not find calibration file. Please make sure to give a correct name!" << std::endl; exit(1);}
+      calibfilename  =  forcalibfilename.at(8);
+      settingsfile.close();
+    }
+
+
+
+
 
     std::cout << "#################################################" << std::endl;
     //std::cout << "\tStart inputline:\t" << startinput << "\n\tEnd inputline:\t\t" << inputlines << std::endl;
@@ -524,6 +534,11 @@ int main (int argc, char* argv[])
     if (calibrationmode == 1)
     {
         infile.open(calibfilename.c_str());
+        if (!infile) 
+        {
+            std::cout << "Unable to open file Kalibration file. Please make sure it exists!" << std::endl;
+            exit(1);   // call system to stop
+        }
         while (std::getline(infile,line))
         {
             sscanf(line.c_str(),"%i\t%lf\t%lf\t%lf\t%lf", &calTIME, &cal00, &cal01, &cal10, &cal11);
