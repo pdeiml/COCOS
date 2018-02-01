@@ -600,168 +600,173 @@ int main (int argc, char* argv[])
 
 
 
-    //##################################################################################//
-    //############# Jetzt wieder jede Menge Code aus dem ptu -> txt - file #############//
+//##################################################################################//
+//############# Jetzt wieder jede Menge Code aus dem ptu -> txt - file #############//
 
-  	char Magic[8];
-  	char Version[8];
-  	char Buffer[40];
-  	char* AnsiBuffer;
-  	char* WideBuffer;
-  	int Result;
+    
+    int timecounter = 0;
+    char Magic[8];
+    char Version[8];
+    char Buffer[40];
+    char* AnsiBuffer;
+    char* WideBuffer;
+    int Result;
 
-  	long long NumRecords = -1;
-  	long long RecordType = 0;
-  	long long maxinput = -1;//For later limitation of inputlines
-
-
-  	printf("\nPicoQuant Unified TTTR (PTU) Mode File Demo");
-  	printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-
-  	if((fpin=fopen(argv[1],"rb"))==NULL)
-      	{printf("\n ERROR! Input file cannot be opened, aborting.\n"); goto close;}
+    long long NumRecords = -1;
+    long long RecordType = 0;
+    long long maxinput = -1;//For later limitation of inputlines
 
 
+    //printf("\nPicoQuant Unified TTTR (PTU) Mode File Demo");
+    //printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 
-  	printf("\n Loading data from %s \n", argv[1]);
-  	//printf("\n Writing output to %s \n", argv[2]);
-	
-  	Result = fread( &Magic, 1, sizeof(Magic) ,fpin);
-  	if (Result!= sizeof(Magic))
-  	{
-  	  printf("\nerror reading header, aborted.");
-  	    goto close;
-  	}
-  	Result = fread(&Version, 1, sizeof(Version) ,fpin);
-  	if (Result!= sizeof(Version))
-  	  {
-  	  printf("\nerror reading header, aborted.");
-  	    goto close;
-  	}
-  	if (strncmp(Magic, "PQTTTR", 6))
-  	{
-  	  printf("\nWrong Magic, this is not a PTU file.");
-  	  goto close;
-  	}
-  	//fprintf(fpout, "Tag Version: %s \n", Version);
-	
-  	// read tagged header
-  	do
-  	{
-  	  // This loop is very generic. It reads all header items and displays the identifier and the
-  	  // associated value, quite independent of what they mean in detail.
-  	  // Only some selected items are explicitly retrieved and kept in memory because they are 
-  	  // needed to subsequently interpret the TTTR record data.
-	
-  	  Result = fread( &TagHead, 1, sizeof(TagHead) ,fpin);
-  	  if (Result!= sizeof(TagHead))
-  	  {
-  	      printf("\nIncomplete File.");
-  	        goto close;
-  	  }
-	
-  	  strcpy(Buffer, TagHead.Ident);
-  	  if (TagHead.Idx > -1)
-  	  {
-  	    sprintf(Buffer, "%s(%d)", TagHead.Ident,TagHead.Idx);
-  	  }
-  	  switch (TagHead.Typ)
-  	  {
-  	      case tyEmpty8:
-  	      break;
-  	    case tyBool8:
-  	      break;
-  	    case tyInt8:
-  	      // get some Values we need to analyse records
-  	      if (strcmp(TagHead.Ident, TTTRTagNumRecords)==0) // Number of records
-  	                  NumRecords = TagHead.TagValue;
-  	      if (strcmp(TagHead.Ident, TTTRTagTTTRRecType)==0) // TTTR RecordType
-  	                  RecordType = TagHead.TagValue;
-  	      break;
-  	    case tyBitSet64:
-  	      break;
-  	    case tyColor8:
-  	      break;
-  	    case tyFloat8:
-  	      if (strcmp(TagHead.Ident, TTTRTagRes)==0) // Resolution for TCSPC-Decay
-  	                  Resolution = *(double*)&(TagHead.TagValue);
-  	      if (strcmp(TagHead.Ident, TTTRTagGlobRes)==0) // Global resolution for timetag
-  	                  GlobRes = *(double*)&(TagHead.TagValue); // in ns
-                      iGlobRes = 1e12 * GlobRes;
-  	      break;
-  	    case tyFloat8Array:
-  	      // only seek the Data, if one needs the data, it can be loaded here
-  	      fseek(fpin, (long)TagHead.TagValue, SEEK_CUR);
-  	      break;
-  	    case tyTDateTime:
-  	      time_t CreateTime;
-  	      CreateTime = TDateTime_TimeT(*((double*)&(TagHead.TagValue)));
-  	      break;
-  	    case tyAnsiString:
-  	      AnsiBuffer = (char*)calloc((size_t)TagHead.TagValue,1);
-  	              Result = fread(AnsiBuffer, 1, (size_t)TagHead.TagValue, fpin);
-  	            if (Result!= TagHead.TagValue)
-  	      {
-  	        printf("\nIncomplete File.");
-  	        free(AnsiBuffer);
-  	                goto close;
-  	      }
-  	      free(AnsiBuffer);
-  	      break;
-  	          case tyWideString:
-  	      WideBuffer = (char*)calloc((size_t)TagHead.TagValue,1);
-  	              Result = fread(WideBuffer, 1, (size_t)TagHead.TagValue, fpin);
-  	            if (Result!= TagHead.TagValue)
-  	      {
-  	        printf("\nIncomplete File.");
-  	        free(WideBuffer);
-  	                goto close;
-  	      }
-  	      free(WideBuffer);
-  	      break;
-  	          case tyBinaryBlob:
-  	      // only seek the Data, if one needs the data, it can be loaded here
-  	      fseek(fpin, (long)TagHead.TagValue, SEEK_CUR);
-  	      break;
-  	    default:
-  	      printf("Illegal Type identifier found! Broken file?");
-  	      goto close;
-  	  }
-  	}
-  	while((strncmp(TagHead.Ident, FileTagEnd, sizeof(FileTagEnd))));
-	// End Header loading
+    if((fpin=fopen(argv[1],"rb"))==NULL)
+        {printf("\n ERROR! Input file cannot be opened, aborting.\n"); goto close;}
 
- 	 // TTTR Record type
- 	 switch (RecordType)
- 	 {
- 	   case rtPicoHarpT2:
- 	     break;
- 	   case rtPicoHarpT3:
- 	     break;
- 	   case rtHydraHarpT2:
- 	     break;
- 	   case rtHydraHarpT3:
- 	     break;
- 	   case rtHydraHarp2T2:
- 	     break;
- 	   case rtHydraHarp2T3:
- 	     break;
- 	   case rtTimeHarp260NT3:
- 	     break;
- 	   case rtTimeHarp260NT2:
- 	     break;
- 	   case rtTimeHarp260PT3:
- 	     break;
- 	   case rtTimeHarp260PT2:
- 	     break;
- 	 default:
- 	   goto close;
-  	}
 
-  	unsigned int TTTRRecord;
 
+    printf("\n Loading data from %s \n", argv[1]);
+    //printf("\n Writing output to %s \n", argv[2]);
   
-  	std::cout << "Total number of records of the file:\t" << NumRecords << std::endl;
+    Result = fread( &Magic, 1, sizeof(Magic) ,fpin);
+    if (Result!= sizeof(Magic))
+    {
+      printf("\nerror reading header, aborted.");
+        goto close;
+    }
+    Result = fread(&Version, 1, sizeof(Version) ,fpin);
+    if (Result!= sizeof(Version))
+      {
+      printf("\nerror reading header, aborted.");
+        goto close;
+    }
+    if (strncmp(Magic, "PQTTTR", 6))
+    {
+      printf("\nWrong Magic, this is not a PTU file.");
+      goto close;
+    }
+    //fprintf(fpout, "Tag Version: %s \n", Version);
+  
+    // read tagged header
+    do
+    {
+      // This loop is very generic. It reads all header items and displays the identifier and the
+      // associated value, quite independent of what they mean in detail.
+      // Only some selected items are explicitly retrieved and kept in memory because they are 
+      // needed to subsequently interpret the TTTR record data.
+  
+      Result = fread( &TagHead, 1, sizeof(TagHead) ,fpin);
+      if (Result!= sizeof(TagHead))
+      {
+          printf("\nIncomplete File.");
+            goto close;
+      }
+  
+      strcpy(Buffer, TagHead.Ident);
+      if (TagHead.Idx > -1)
+      {
+        sprintf(Buffer, "%s(%d)", TagHead.Ident,TagHead.Idx);
+      }
+      switch (TagHead.Typ)
+      {
+          case tyEmpty8:
+          break;
+        case tyBool8:
+          break;
+        case tyInt8:
+          timecounter ++;
+          if (timecounter == 35){std::cout << "Adjusted measurement time:\t" << 1e-3 * TagHead.TagValue << " s" << std::endl;}
+          // get some Values we need to analyse records
+          if (strcmp(TagHead.Ident, TTTRTagNumRecords)==0) // Number of records
+                      NumRecords = TagHead.TagValue;
+          if (strcmp(TagHead.Ident, TTTRTagTTTRRecType)==0) // TTTR RecordType
+                      RecordType = TagHead.TagValue;
+          break;
+        case tyBitSet64:
+          break;
+        case tyColor8:
+          break;
+        case tyFloat8:
+          if (strcmp(TagHead.Ident, TTTRTagRes)==0) // Resolution for TCSPC-Decay
+                      Resolution = *(double*)&(TagHead.TagValue);
+          if (strcmp(TagHead.Ident, TTTRTagGlobRes)==0) // Global resolution for timetag
+                      GlobRes = *(double*)&(TagHead.TagValue); // in ns
+                      iGlobRes = 1e12 * GlobRes;
+          break;
+        case tyFloat8Array:
+          // only seek the Data, if one needs the data, it can be loaded here
+          fseek(fpin, (long)TagHead.TagValue, SEEK_CUR);
+          break;
+        case tyTDateTime:
+          time_t CreateTime;
+          CreateTime = TDateTime_TimeT(*((double*)&(TagHead.TagValue)));
+          break;
+        case tyAnsiString:
+          AnsiBuffer = (char*)calloc((size_t)TagHead.TagValue,1);
+                  Result = fread(AnsiBuffer, 1, (size_t)TagHead.TagValue, fpin);
+                if (Result!= TagHead.TagValue)
+          {
+            printf("\nIncomplete File.");
+            free(AnsiBuffer);
+                    goto close;
+          }
+          free(AnsiBuffer);
+          break;
+              case tyWideString:
+          WideBuffer = (char*)calloc((size_t)TagHead.TagValue,1);
+                  Result = fread(WideBuffer, 1, (size_t)TagHead.TagValue, fpin);
+                if (Result!= TagHead.TagValue)
+          {
+            printf("\nIncomplete File.");
+            free(WideBuffer);
+                    goto close;
+          }
+          free(WideBuffer);
+          break;
+              case tyBinaryBlob:
+          // only seek the Data, if one needs the data, it can be loaded here
+          fseek(fpin, (long)TagHead.TagValue, SEEK_CUR);
+          break;
+        default:
+          printf("Illegal Type identifier found! Broken file?");
+          goto close;
+      }
+    }
+    while((strncmp(TagHead.Ident, FileTagEnd, sizeof(FileTagEnd))));
+  // End Header loading
+
+   // TTTR Record type
+   switch (RecordType)
+   {
+     case rtPicoHarpT2:
+       break;
+     case rtPicoHarpT3:
+       break;
+     case rtHydraHarpT2:
+       break;
+     case rtHydraHarpT3:
+       break;
+     case rtHydraHarp2T2:
+       break;
+     case rtHydraHarp2T3:
+       break;
+     case rtTimeHarp260NT3:
+       break;
+     case rtTimeHarp260NT2:
+       break;
+     case rtTimeHarp260PT3:
+       break;
+     case rtTimeHarp260PT2:
+       break;
+   default:
+     goto close;
+    }
+
+    unsigned int TTTRRecord;  
+    std::cout << "Total number of records of the file:\t" << NumRecords << std::endl;
+
+    //############# Ende wieder jede Menge Code aus dem ptu -> txt - file #############\\
+    //##################################################################################\\
   	
 
 
@@ -1088,8 +1093,8 @@ int main (int argc, char* argv[])
     			if (correlationarray[i][2][bas][inv] > g2ymax){g2ymax = correlationarray[i][2][bas][inv];}
     			if (correlationarray[i][2][bas][inv] < g2ymin){g2ymin = correlationarray[i][2][bas][inv];}
     		}
-    		g2disthisto[bas][inv] = new TH1D("g2dist","g2-Distribution", (g2ymax - g2ymin)/0.001, g2ymin, g2ymax);
-    		std::cout << "nbins: " << (g2ymax - g2ymin)/0.001 << std::endl;
+    		g2disthisto[bas][inv] = new TH1D("g2dist","g2-Distribution", 4000, 0.9, 1.1);
+    		//std::cout << "nbins: " << (g2ymax - g2ymin)/0.001 << std::endl;
     		for (int i=0; i<nbins; i++)
     		{
     			g2disthisto[bas][inv]->Fill(correlationarray[i][2][bas][inv]);
