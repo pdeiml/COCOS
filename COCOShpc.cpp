@@ -978,26 +978,7 @@ int main (int argc, char* argv[])
 	  std::cout << "Ratio 0:1 : " << rateratio << "\t1:0 : " << invrateratio << std::endl;
 	  std::cout << "--------------------------------------------" << std::endl;
     
-  
-  system("mkdir results");
-  //Infofile
-  ofstream info;
-  info.open("results/infos.txt");
-   //fileout << fixed;
-   info << "File: " << argv[1] << "\n";
-   info << "---------------------------------------------------\n";
-   info << "Starttime: " << 1e-12 * startmeastime << " s\t\tEndtime: " << 1e-12 * endmeastime << " s\n";
-   info << "Effective Measurement time : " << 1e-12 * meastime << " s\n";
-   info << "Channel\tCounts\t\tRate (MHz)\n";
-   info << "0\t" << ccounts[0] << "\t" << c0_rate << "\n";
-   info << "1\t" << ccounts[1] << "\t" << c1_rate << "\n";
-   info << "Total counts:\t" << ccounts[0] + ccounts[1] << "\n";
-   info << "Ratio 0:1 : " << rateratio << "\t1:0 : " << invrateratio << "\n";
-  info.close();
-
-    
-
-   
+     
 
 	std::cout << ">Further analysis..." << std::endl;
 
@@ -1218,6 +1199,23 @@ int main (int argc, char* argv[])
     std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << "Total computation time: " << timediff << " s" << std::endl;
     std::cout << "--------------------------------------------------------------------------------" << std::endl;
+
+  system("mkdir results");
+  //Infofile
+  ofstream info;
+  info.open("results/infos.txt");
+   //fileout << fixed;
+   info << "File: " << argv[1] << "\n";
+   info << "Computation time:\t" << timediff << " s\n";
+   info << "---------------------------------------------------\n";
+   info << "Starttime: " << 1e-12 * startmeastime << " s\t\tEndtime: " << 1e-12 * endmeastime << " s\n";
+   info << "Effective Measurement time : " << 1e-12 * meastime << " s\n";
+   info << "Channel\tCounts\t\tRate (MHz)\n";
+   info << "0\t" << ccounts[0] << "\t" << c0_rate << "\n";
+   info << "1\t" << ccounts[1] << "\t" << c1_rate << "\n";
+   info << "Total counts:\t" << ccounts[0] + ccounts[1] << "\n";
+   info << "Ratio 0:1 : " << rateratio << "\t1:0 : " << invrateratio << "\n";
+  info.close();
 
 
     
