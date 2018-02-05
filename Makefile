@@ -6,7 +6,7 @@ ROOTLIBFLAGS := $(shell root-config --libs)
 CXXFLAGS = $(ROOTCXXFLAGS)
 LIBFLAGS = $(ROOTLIBFLAGS) 
 
-EXECUTES = COCOS COCOShpc
+EXECUTES = COCOS COCOShpc COCOSdt_vun_hpc
 
 all: $(EXECUTES)
 
@@ -19,3 +19,6 @@ COCOS: ./COCOS.cpp
 
 COCOShpc: ./COCOShpc.cpp
 	$(CC) ./COCOShpc.cpp $(CXXFLAGS) -o COCOShpc $(LIBFLAGS)
+
+COCOSdt_vun_hpc: ./COCOSdt_vun_hpc.cpp
+	$(CC) ./COCOSdt_vun_hpc.cpp $(CXXFLAGS) -o COCOSdt_vun_hpc $(LIBFLAGS)
