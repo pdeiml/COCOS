@@ -12,3 +12,6 @@ Aktueller Stand der Dinge:
 
 # COCOShpc
 HPC-Version (ohne Interaktion). Die Einstellungen müssen hierzu in der 'settings.txt' Datei vorgenommen werden, im Format, wie sie in der Beispiel-Datei mitgeliefert wird. Die settings.txt muss im gleichen Ordner liegen wie die COCOShpc-exe.
+
+# Calibrate
+root-Code, mit dem man beliebige Messungen mit einer beliebigen Messung kalibriert. Dazu werden die 'Calibration.txt'-Dateien die im calibration mode 2 erstellt werde, benötigt. Im Code kann man den 'datanames'-Vektor mit den Pfaden/Dateien füllen, die man miteinander vergleichen möchte, anschließend die Datei in root ausführen und die Datei auswählen, die die Kalibrationsbasis darstellen soll.
