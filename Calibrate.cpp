@@ -122,7 +122,7 @@ void Calibrate (){
     //Fill all graphs and create g2-distribution histograms
     TH1I * g2dist[nmeas][2][2];
     double g2dist_rms[nmeas][2][2], g2dist_mean[nmeas][2][2];
-    double g2distmax[2][2] = 0;
+    double g2distmax[2][2]; g2distmax[0][0] = 0; g2distmax[0][1] = 0; g2distmax[1][0] = 0; g2distmax[1][1] = 0;
     for (int imeas=0; imeas<nmeas; imeas++)
     {
     	for (int bas=0; bas<2; bas++)
