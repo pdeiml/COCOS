@@ -1236,6 +1236,11 @@ int main (int argc, char* argv[])
       fileout << setprecision(15);
       fileout.open(calibfilename.c_str());
       //fileout << fixed;
+      fileout << "#---------------------------------------------------\n";
+      fileout << "# File: " << argv[1] << "\n";
+      fileout << "# is " << 1e-12 * startevaltime << ";\tie " << 1e-12 * endevaltime << ";\tsl " << timelimitation << "\n";
+      fileout << "# ts " << taubeg + (binwidth/2) << ";\tte " << tauend + (binwidth/2) << ";\tnb " << nbins << " ->Width: " << binwidth << "\n";
+      fileout << "#---------------------------------------------------\n";
       for (int b=0; b<nbins; b++)
       {
         //std::cout << correlationarray[b][0][0][1] << "\t" << correlationarray[b][2][0][1] << "\t" << correlationarray[b][2][1][0] << std::endl;
