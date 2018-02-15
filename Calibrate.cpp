@@ -33,16 +33,20 @@ void Calibrate (){
 
 	std::vector<std::string> datanames; datanames.push_back("Evaluate without calibration\n");
 
-	datanames.push_back("2018_01_26/CalibrationSun_0toEnd.txt");
+	//datanames.push_back("2018_01_26/CalibrationSun_0toEnd.txt");
 
-	datanames.push_back("2018_02_02/C-BS-LED-nF.txt");
-	datanames.push_back("2018_02_02/C-BS-LED-F.txt");
+	//datanames.push_back("2018_02_02/C-BS-LED-nF.txt");
+	//datanames.push_back("2018_02_02/C-BS-LED-F.txt");
 
-	datanames.push_back("2018_02_08/C-BS-Sun.txt");
-	datanames.push_back("2018_02_08/C-BS-LED-nF.txt");
-	datanames.push_back("2018_02_08/C-BS-LED-F.txt");
+	//datanames.push_back("2018_02_08/C-BS-Sun.txt");
+	//datanames.push_back("2018_02_08/C-BS-LED-nF.txt");
+	//datanames.push_back("2018_02_08/C-BS-LED-F.txt");
 
 	datanames.push_back("2018_02_09/C-BS-Sun_1h-nF.txt");
+
+	datanames.push_back("2018_02_13/C-BS-Sun_1h-nF.txt");
+
+    datanames.push_back("../Calibration.txt");
 
 
 
@@ -90,6 +94,7 @@ void Calibrate (){
     double minx, maxx;
 
     int actmeas = 0;
+    int asciicode;
 
     for (int i=0; i<nmeas; i++)
     {
@@ -99,15 +104,19 @@ void Calibrate (){
             infile.open(datanames.at(i).c_str());
             while (std::getline(infile,line))
             {
-                sscanf(line.c_str(),"%i\t%lf\t%lf\t%lf\t%lf", &calTIME, &cal00, &cal01, &cal10, &cal11);
-                if(cal00 < 0.001){cal00 =1;}
-                if(cal01 < 0.001){cal01 =1;}
-                if(cal10 < 0.001){cal10 =1;}
-                if(cal11 < 0.001){cal11 =1;}
-                //std::cout << calTIME << "\t" << cal01 << "\t" << cal10 << std::endl;
-                vcalt[actmeas].push_back(calTIME);
-                vcal[actmeas][0][0].push_back(cal00); vcal[actmeas][0][1].push_back(cal01);
-                vcal[actmeas][1][0].push_back(cal10); vcal[actmeas][1][1].push_back(cal11);
+            	asciicode = line.at(0);
+            	if (asciicode != 35)//Not "#"
+            	{
+            		sscanf(line.c_str(),"%i\t%lf\t%lf\t%lf\t%lf", &calTIME, &cal00, &cal01, &cal10, &cal11);
+                	if(cal00 < 0.001){cal00 =1;}
+                	if(cal01 < 0.001){cal01 =1;}
+                	if(cal10 < 0.001){cal10 =1;}
+                	if(cal11 < 0.001){cal11 =1;}
+                	//std::cout << calTIME << "\t" << cal01 << "\t" << cal10 << std::endl;
+                	vcalt[actmeas].push_back(calTIME);
+                	vcal[actmeas][0][0].push_back(cal00); vcal[actmeas][0][1].push_back(cal01);
+                	vcal[actmeas][1][0].push_back(cal10); vcal[actmeas][1][1].push_back(cal11);
+            	}
             }
             infile.close();
         }
@@ -116,10 +125,14 @@ void Calibrate (){
             infile.open(datanames.at(i+1).c_str());
             while (std::getline(infile,line))
             {
-                sscanf(line.c_str(),"%i\t%lf\t%lf\t%lf\t%lf", &calTIME, &cal00, &cal01, &cal10, &cal11);
-                vcalt[actmeas].push_back(calTIME);
-                vcal[actmeas][0][0].push_back(1.); vcal[actmeas][0][1].push_back(1.);
-                vcal[actmeas][1][0].push_back(1.); vcal[actmeas][1][1].push_back(1.);
+            	asciicode = line.at(0);
+            	if (asciicode != 35)
+            	{
+            		sscanf(line.c_str(),"%i\t%lf\t%lf\t%lf\t%lf", &calTIME, &cal00, &cal01, &cal10, &cal11);
+                	vcalt[actmeas].push_back(calTIME);
+                	vcal[actmeas][0][0].push_back(1.); vcal[actmeas][0][1].push_back(1.);
+                	vcal[actmeas][1][0].push_back(1.); vcal[actmeas][1][1].push_back(1.);
+            	}
             }
             infile.close();
         }
