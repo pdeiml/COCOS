@@ -46,7 +46,9 @@ void Calibrate (){
 
 	//datanames.push_back("2018_02_13/C-BS-Sun_1h-nF.txt");
 
-    datanames.push_back("2018_02_14/LED-Filter/ganz/Calibration.txt");
+    //datanames.push_back("2018_02_14/LED-Filter/ganz/Calibration.txt");
+    datanames.push_back("2018_02_14/LED-Filter/Abschnitte/0-35h/Calibration.txt");
+    datanames.push_back("2018_02_14/LED-Filter/Abschnitte/35-7h/Calibration.txt");
 
 
 
@@ -61,15 +63,15 @@ void Calibrate (){
 
 	//Define Colors
     int colorarray[20];
-    colorarray[0] = 51;//1;
-    colorarray[1] = 60;//2;
-    colorarray[2] = 65;//3;
-    colorarray[3] = 75;//4;
-    colorarray[4] = 95;//6;
-    colorarray[5] = 100;//7;
-    colorarray[6] = 6;//28;
-    colorarray[7] = 41;
-    colorarray[8] = 51;
+    colorarray[0] = 2;//51;//1;
+    colorarray[1] = 8;//60;//2;
+    colorarray[2] = 4;//65;//3;
+    colorarray[3] = 6;//75;//4;
+    colorarray[4] = 7;//95;//6;
+    colorarray[5] = 95;//100;//7;
+    colorarray[6] = 5;//6;//28;
+    colorarray[7] = 28;//41;
+    colorarray[8] = 12;//51;
     colorarray[9] = 94;
     colorarray[10] = 20;
     colorarray[11] = 30;
@@ -104,6 +106,7 @@ void Calibrate (){
         if (actmeas != 0)//Real files
         {
             infile.open(datanames.at(i).c_str());
+            if (!infile){std::cout << "\033[1;31mCannot open file \"" << datanames.at(i) << "\"\033[0m" << std::endl; exit(1);}
             while (std::getline(infile,line))
             {
             	asciicode = line.at(0);
