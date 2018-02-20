@@ -31,7 +31,7 @@ using namespace std;
 void Calibrate (){
 
 
-	std::vector<std::string> datanames; datanames.push_back("Evaluate without calibration\n");
+	std::vector<std::string> datanames; datanames.push_back("Evaluate without further calibration\n");
 
 	//datanames.push_back("2018_01_26/CalibrationSun_0toEnd.txt");
 
@@ -42,11 +42,11 @@ void Calibrate (){
 	//datanames.push_back("2018_02_08/C-BS-LED-nF.txt");
 	//datanames.push_back("2018_02_08/C-BS-LED-F.txt");
 
-	datanames.push_back("2018_02_09/C-BS-Sun_1h-nF.txt");
+	//datanames.push_back("2018_02_09/C-BS-Sun_1h-nF.txt");
 
-	datanames.push_back("2018_02_13/C-BS-Sun_1h-nF.txt");
+	//datanames.push_back("2018_02_13/C-BS-Sun_1h-nF.txt");
 
-    datanames.push_back("../Calibration.txt");
+    datanames.push_back("2018_02_14/LED-Filter/ganz/Calibration.txt");
 
 
 
@@ -85,6 +85,7 @@ void Calibrate (){
     std::vector<float> vcal[nmeas][2][2];
     std::vector<float> vcalt[nmeas];
     TGraph * g2graph[nmeas][2][2];
+    TGraph * g2calib[nmeas][2][2];
     int calTIME;
     double cal00, cal01, cal10, cal11;
     std::string line;
@@ -95,6 +96,7 @@ void Calibrate (){
 
     int actmeas = 0;
     int asciicode;
+    double calibmod8[nmeas][2][2][8] = {{{{0}}}};
 
     for (int i=0; i<nmeas; i++)
     {
@@ -126,7 +128,7 @@ void Calibrate (){
             while (std::getline(infile,line))
             {
             	asciicode = line.at(0);
-            	if (asciicode != 35)
+            	if (asciicode != 35)//Not "#"
             	{
             		sscanf(line.c_str(),"%i\t%lf\t%lf\t%lf\t%lf", &calTIME, &cal00, &cal01, &cal10, &cal11);
                 	vcalt[actmeas].push_back(calTIME);
@@ -135,9 +137,9 @@ void Calibrate (){
             	}
             }
             infile.close();
-        }
-    	
+        }    	
     }
+
     //Set plot range parameters
     minx = vcalt[0].at(0); maxx = vcalt[0].at(vcalt[0].size() -1);
 
@@ -155,7 +157,6 @@ void Calibrate (){
     std::cout << "Set calibration basis:\t";
     cin >> calibrationbasistring;
     calibrationbasis = std::atof(calibrationbasistring.c_str());
-    TGraph * g2calib[nmeas][2][2];
 
     std::cout << "Change plot range [" << 1e-3 * minx << ":" << 1e-3 * maxx << "] ns [y/n] ?\t";
     std::string cprstring; cin >> cprstring;
@@ -171,6 +172,53 @@ void Calibrate (){
     }
 
 
+
+    //Create uncalibrated graph before doing anything
+    for (int imeas=0; imeas<nmeas; imeas++)
+    {
+    	for (int bas=0; bas<2; bas++)
+    	{
+    		for (int inv=0; inv<2; inv++)
+    		{
+    			g2graph[imeas][bas][inv] = new TGraph(vcalt[imeas].size());
+    			g2graph[imeas][bas][inv]->SetLineColor(colorarray[imeas]);
+
+    			for (int i=0; i<vcalt[imeas].size(); i++)
+    			{
+                    //Fill g2 calibrated graphs
+    				g2graph[imeas][bas][inv]->SetPoint(i, vcalt[imeas].at(i), vcal[imeas][bas][inv].at(i));
+    			}
+                //Set range
+                g2graph[imeas][bas][inv]->GetXaxis()->SetRangeUser(minx, maxx);
+    		}
+    	}
+    }
+
+
+    //New calibration: Calibrate with nself times of 8-bin tail results
+    int nself = 63;
+    for (int imeas=0; imeas<nmeas; imeas++)
+    {
+    	for (int bas=0; bas<2; bas++)
+    	{
+    		for (int inv=0; inv<2; inv++)
+    		{
+    			//Create calibration
+    			for (int j=0; j<8*nself ; j++)
+    			{
+					calibmod8[imeas][bas][inv][j%8] += vcal[imeas][bas][inv][j]/nself;
+				}
+				//Calibrate
+    			for(int ibin=0; ibin<vcalt[imeas].size(); ibin++)
+    			{
+					vcal[imeas][bas][inv][ibin] /= calibmod8[imeas][bas][inv][ibin%8];
+				}
+    		}
+    	}
+	}
+
+
+
     //Fill all graphs and create g2-distribution histograms
     TH1I * g2dist[nmeas][2][2];
     double g2dist_rms[nmeas][2][2], g2dist_mean[nmeas][2][2];
@@ -181,13 +229,9 @@ void Calibrate (){
     	{
     		for (int inv=0; inv<2; inv++)
     		{
-    			g2graph[imeas][bas][inv] = new TGraph(vcalt[imeas].size());
-    			g2graph[imeas][bas][inv]->SetLineColor(colorarray[imeas]);
-    			if(imeas == calibrationbasis){g2graph[imeas][bas][inv]->SetLineWidth(2);}
-
     			g2calib[imeas][bas][inv] = new TGraph(vcalt[imeas].size());
     			g2calib[imeas][bas][inv]->SetLineColor(colorarray[imeas]);
-    			g2calib[imeas][bas][inv]->SetLineWidth(2);
+    			g2calib[imeas][bas][inv]->SetLineWidth(1);
 
                 g2dist[imeas][bas][inv] = new TH1I("", "g2 distribution histogram", 4000, 0.9, 1.1);
                 g2dist[imeas][bas][inv]->SetLineColor(colorarray[imeas]);
@@ -195,7 +239,6 @@ void Calibrate (){
     			for (int i=0; i<vcalt[imeas].size(); i++)
     			{
                     //Fill g2 calibrated graphs
-    				g2graph[imeas][bas][inv]->SetPoint(i, vcalt[imeas].at(i), vcal[imeas][bas][inv].at(i));
     				g2calib[imeas][bas][inv]->SetPoint(i, vcalt[imeas].at(i), vcal[imeas][bas][inv].at(i)/vcal[calibrationbasis][bas][inv].at(i));
                     //Fill histogram
                     if (imeas != calibrationbasis && imeas != 0 && vcalt[0].at(i) >= minx && vcalt[0].at(i) <= maxx)
@@ -211,7 +254,6 @@ void Calibrate (){
                 }
 
                 //Set range
-                g2graph[imeas][bas][inv]->GetXaxis()->SetRangeUser(minx, maxx);
                 g2calib[imeas][bas][inv]->GetXaxis()->SetRangeUser(minx, maxx);
     		}
     	}
@@ -268,7 +310,8 @@ void Calibrate (){
         fouriertransform[imeas]->GetXaxis()->SetLimits(0, nbinsinrange/(1e-12*(maxx - minx)));//Rescale x-axis for real frequencies
         fouriertransform[imeas]->GetXaxis()->SetTitle("f [Hz]");
         fouriertransform[imeas]->SetLineColor(colorarray[imeas]);
-        fouriertransform[imeas]->SetLineWidth(2);
+        fouriertransform[imeas]->SetLineWidth(1);
+        fouriertransform[imeas]->GetXaxis()->SetRangeUser(4e6,2000e6);
     }
 
 
@@ -346,9 +389,9 @@ void Calibrate (){
         }
     }
 
-    int legheight = 80 * nmeas;
+    int legheight = 60 * nmeas;
     TCanvas * legcanvas = new TCanvas("legend","Legend", 500,legheight);
-    	plotlegend = new TLegend(0,0,1,1);
+    	TLegend* plotlegend = new TLegend(0,0,1,1);
     	for (int i=1; i<nmeas; i++)
     	{
     		//plotlegend->AddEntry(g2graph[i][0][0], shownames.at(i).c_str(),"l");
