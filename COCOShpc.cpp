@@ -1233,8 +1233,10 @@ int main (int argc, char* argv[])
       fileout << "#---------------------------------------------------\n";
       for (int b=0; b<nbins; b++)
       {
-        //std::cout << correlationarray[b][0][0][1] << "\t" << correlationarray[b][2][0][1] << "\t" << correlationarray[b][2][1][0] << std::endl;
-        fileout << correlationarray[b][0][0][1] << "\t" << correlationarray[b][2][0][0] << "\t" << correlationarray[b][2][0][1] << "\t" << correlationarray[b][2][1][0] << "\t" << correlationarray[b][2][1][1] << "\n";
+        //Write g2 function:
+        //fileout << correlationarray[b][0][0][1] << "\t" << correlationarray[b][2][0][0] << "\t" << correlationarray[b][2][0][1] << "\t" << correlationarray[b][2][1][0] << "\t" << correlationarray[b][2][1][1] << "\n";
+        //Write events:
+        fileout << correlationarray[b][0][0][1] << "\t" << correlationarray[b][1][0][0] << "\t" << correlationarray[b][1][0][1] << "\t" << correlationarray[b][1][1][0] << "\t" << correlationarray[b][1][1][1] << "\n";
       }
       fileout.close();
     }
