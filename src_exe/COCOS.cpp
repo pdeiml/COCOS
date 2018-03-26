@@ -25,6 +25,8 @@
 #include  <termios.h>
 #include  <string.h>
 
+#include "Settings.hpp"
+
 
 using namespace std;
 //Compile-Befehl auf mac mit g++:
@@ -409,129 +411,26 @@ void ProcessHHT3(unsigned int TTTRRecord, int HHVersion)
 
 int main (int argc, char* argv[])
 {
-
     std::cout << "\n\nSTART COCOS\n" << std::endl;
 
-  
-
-
-
-
-    //Set Parameters, all of them can be changed later on manually in the executable
-    long long startevaltime = 0;
-    long long endevaltime = 0;
-    bool timelimitation = false;   
+    Settings vSetting;
+    vSetting.PrintSettings();
     
-    int taubeg = -250e3;
-    int tauend =  250e3;
-    int binnumber = 2000;
-
-   	
-
-
-
-    //#############################################################################//
-    //############# Jetzt kommen jede Menge manuelles-Einstellen-Zeug #############//
-    std::string calibrationmodestring[3];
-    calibrationmodestring[0] = "none";
-    calibrationmodestring[1] = "read";
-    calibrationmodestring[2] = "write";
-
-    int calibrationmode = 0;
     std::string calibfilename = "Calibration.txt";
-
-
-    settingsmarker:;
-
-	  std::cout << "\n\n\n\nWhat do you want to do/change?" << std::endl;
-    std::cout << "#################################################" << std::endl;
-        std::cout << "\nStart evaluation time\t[is]\t" << 1e-12 * startevaltime << " s\nEnd evaluation time\t[ie]\t" << 1e-12 * endevaltime << " s\nSet input limitation\t[sl]\t" << timelimitation << std::endl;
-        std::cout << "\nStarttime (ps)\t\t[ts]\t" << taubeg << "\nEndtime   (ps)\t\t[te]\t" << tauend << "\nNumber of bins\t\t[nb]\t" << binnumber << "\t-> binwidth = " << 1.*(tauend - taubeg)/(1.*binnumber) << " ps" << std::endl;
-        std::cout << "\nChange calibration mode\t[cm]\t" << calibrationmodestring[calibrationmode] << "\nCalibration file name\t[cf]\t" << calibfilename << std::endl;
-        std::cout << "\nContinue\t\t[c]" << std::endl;
-        std::cout << "##################################################" << std::endl;
-        std::cout << "\nType it here:\t";
-        std::string whatchangestring; cin >> whatchangestring;
-        std::cout << "\n" << std::endl;
-
-        if (whatchangestring != "is" && whatchangestring != "ie" && whatchangestring != "ts" && whatchangestring != "te" && whatchangestring != "nb" && whatchangestring !="sl" && whatchangestring !="c" && whatchangestring != "cm" && whatchangestring != "cf")
-        {
-            std::cout << "\n\n\nWhat do you mean? Please enter again." << std::endl;
-            goto settingsmarker;
-        }
-        if (whatchangestring == "is")
-        {
-            std::cout << "Enter new Start of evaluation time [s]:\t";
-            std::string isstring; cin >> isstring;
-            startevaltime = 1e12 * std::atoi(isstring.c_str());
-            timelimitation = true;
-        }
-        if (whatchangestring == "ie")
-        {
-            std::cout << "Enter new end of evaluation time [s]:\t";
-            std::string instring; cin >> instring;
-            endevaltime = 1e12 * std::atoi(instring.c_str());
-            timelimitation = true;
-        }
-        if (whatchangestring == "ts")
-        {
-            std::cout << "Enter new starttime (ps):\t";
-            std::string tsstring; cin >> tsstring;
-            taubeg = std::atoi(tsstring.c_str());
-        }
-        if (whatchangestring == "te")
-        {
-            std::cout << "Enter new endtime (ps):\t";
-            std::string testring; cin >> testring;
-            tauend = std::atoi(testring.c_str());
-        }
-        if (whatchangestring == "nb")
-        {
-            std::cout << "Enter new number bins:\t";
-            std::string nbstring; cin >> nbstring;
-            binnumber = std::atoi(nbstring.c_str());
-        }
-        if (whatchangestring == "sl")
-        {
-            std::cout << "Enter new limitation criterion:\t";
-            std::string dfstring; cin >> dfstring;
-            timelimitation = std::atoi(dfstring.c_str());
-        }
-        if (whatchangestring == "cm")
-        {
-            std::cout << "Enter calibration mode number (0: none <> 1: read <> 2: write):\t";
-            std::string cmstring; cin >> cmstring;
-            calibrationmode = std::atoi(cmstring.c_str());
-        }
-        if (whatchangestring == "cf")
-        {
-            std::cout << "Enter calibration file name (incl. ending):\t";
-            std::string cfstring; cin >> cfstring;
-            calibfilename = cfstring;
-        }
-        if (whatchangestring == "c")
-        {
-        	goto settingsdone;
-        }
-        goto settingsmarker;
-
-	settingsdone:;
 
 	//############# Ende manuelles Einstellen-Zeug #############//
 	//##########################################################//
 
 
-    const int nbins = binnumber;
-    double binwidth = 1.*(tauend - taubeg)/(1.*nbins);
+    const int nbins = vSetting.GetNumberOfBins();
+    double binwidth = 1.*(vSetting.GetTauEnd() - vSetting.GetTauBegin())/(1.*nbins);
     if (binwidth < 250){std::cout << "Warning: Binwidth (" << binwidth << " ps) is below the mimimum time-step of the electronics (250 ps)" << std::endl;}
     
     //Adjust start and end time, so that the bins are centered around their value
-    taubeg = taubeg - (binwidth/2);
-    tauend = tauend - (binwidth/2);
+    int taubeg = vSetting.GetTauEnd() - (binwidth/2);
+    int tauend = vSetting.GetTauEnd() - (binwidth/2);
 
     bool evaluating = false;//Check if we are evaluation at the moment
-
-
 
     //Get calibration data
     std::vector<float> vcal[2][2];
@@ -540,7 +439,7 @@ int main (int argc, char* argv[])
     double cal00, cal01, cal10, cal11;
     std::string line;
     std::ifstream infile;
-    if (calibrationmode == 1)
+    if (vSetting.GetCalibrationMode() == "r")
     {
         infile.open(calibfilename.c_str());
         if (!infile) 
@@ -851,7 +750,7 @@ int main (int argc, char* argv[])
     		std::cout << "EVC: " << eventcounter << "  RecNum " << RecNum << std::endl;
 
         //Evaluate only if last time is not before start evaluation time
-        if (inputvector3.back() >= startevaltime)
+        if (inputvector3.back() >= vSetting.GetStartEvalTime())
         {
                       //###############################################//
                      std::cout << "Space-Time-Evaluation:" << std::endl;
@@ -864,11 +763,11 @@ int main (int argc, char* argv[])
                        for (long long i=0; i<partinputs-1; i++)
                        {
                          //Pass ranges that are not within the adjusted evaluation time range:
-                         if (timelimitation == true && inputvector3.at(i) < startevaltime){startlinetotime ++; goto skipevalp;}
+                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) < vSetting.GetStartEvalTime()){startlinetotime ++; goto skipevalp;}
                          else if (startmeastimeout == false){startmeastime = inputvector3.at(i); startmeastimeout = true;}
                          ccounts[inputvector1.at(i)] ++;
                          //End evaluation complete if current time is larger than the upper adjusted timelimit:
-                         if (timelimitation == true && inputvector3.at(i) > endevaltime){endlinetotime = i; if(taubeg>0){goto close;}; goto closep;}
+                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) > vSetting.GetEndEvalTime()){endlinetotime = i; if(taubeg>0){goto close;}; goto closep;}
               
                            //if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}
                          
@@ -909,10 +808,10 @@ int main (int argc, char* argv[])
                        for (long long i=1; i<partinputs; i++)//Start with i=1 as i-1=0
                        {
                          //Pass ranges that are not within the adjusted evaluation time range:
-                         if (timelimitation == true && inputvector3.at(i) < startevaltime){goto skipevaln;}
+                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) < vSetting.GetStartEvalTime()){goto skipevaln;}
                          if (tauend <= 0){ccounts[inputvector1.at(i)] ++;}//Count events as well when only negative time range
                          //End evaluation completely if actual time is larger than the upper adjusted timelimit:
-                         if (timelimitation == true && inputvector3.at(i) > endevaltime){goto close;}
+                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) > vSetting.GetStartEvalTime()){goto close;}
               
               
                            //if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}
@@ -1071,7 +970,7 @@ int main (int argc, char* argv[])
             for (int i=0; i<nbins; i++)
             {
                 correlationarray[i][2][bas][inv] = 1.*(correlationarray[i][1][bas][inv])/(pol0off[bas][inv]);
-                if (calibrationmode == 1){correlationarray[i][2][bas][inv] /= vcal[bas][inv].at(i);}
+                if (vSetting.GetCalibrationMode() == "r"){correlationarray[i][2][bas][inv] /= vcal[bas][inv].at(i);}
                 g2[bas][inv]->SetPoint(i, correlationarray[i][0][bas][inv], correlationarray[i][2][bas][inv]);
                 if (correlationarray[i][2][bas][inv] > g2_max[bas][inv])
                 {
@@ -1230,7 +1129,7 @@ int main (int argc, char* argv[])
 
     
     //Calibration file
-    if (calibrationmode == 2)
+    if (vSetting.GetCalibrationMode() == "w")
     {
       ofstream fileout;
       fileout << setprecision(15);
@@ -1238,7 +1137,7 @@ int main (int argc, char* argv[])
       //fileout << fixed;
       fileout << "#---------------------------------------------------\n";
       fileout << "# File: " << argv[1] << "\n";
-      fileout << "# is " << 1e-12 * startevaltime << ";\tie " << 1e-12 * endevaltime << ";\tsl " << timelimitation << "\n";
+      fileout << "# is " << 1e-12 * vSetting.GetStartEvalTime() << ";\tie " << 1e-12 * vSetting.GetEndEvalTime() << ";\tsl " << vSetting.GetTimeLimitation() << "\n";
       fileout << "# ts " << taubeg + (binwidth/2) << ";\tte " << tauend + (binwidth/2) << ";\tnb " << nbins << " ->Width: " << binwidth << "\n";
       fileout << "#---------------------------------------------------\n";
       for (int b=0; b<nbins; b++)
