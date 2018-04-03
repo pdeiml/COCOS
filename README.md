@@ -1,7 +1,7 @@
 # COCOS
 Programm zur Analyse unserer Messdaten.
 
-
+Kompiliert mit g++, Version 5.4.0 und verlinkt zu root 6.08.02.
 
 Aktueller Stand der Dinge:
 
