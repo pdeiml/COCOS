@@ -439,7 +439,7 @@ int main (int argc, char* argv[])
     double cal00, cal01, cal10, cal11;
     std::string line;
     std::ifstream infile;
-    if (vSetting.GetCalibrationMode() == "r")
+    if (vSetting.GetCalibrationMode() == 1)
     {
         infile.open(calibfilename.c_str());
         if (!infile) 
@@ -970,7 +970,7 @@ int main (int argc, char* argv[])
             for (int i=0; i<nbins; i++)
             {
                 correlationarray[i][2][bas][inv] = 1.*(correlationarray[i][1][bas][inv])/(pol0off[bas][inv]);
-                if (vSetting.GetCalibrationMode() == "r"){correlationarray[i][2][bas][inv] /= vcal[bas][inv].at(i);}
+                if (vSetting.GetCalibrationMode() == 1){correlationarray[i][2][bas][inv] /= vcal[bas][inv].at(i);}
                 g2[bas][inv]->SetPoint(i, correlationarray[i][0][bas][inv], correlationarray[i][2][bas][inv]);
                 if (correlationarray[i][2][bas][inv] > g2_max[bas][inv])
                 {
@@ -1129,7 +1129,7 @@ int main (int argc, char* argv[])
 
     
     //Calibration file
-    if (vSetting.GetCalibrationMode() == "w")
+    if (vSetting.GetCalibrationMode() == 2)
     {
       ofstream fileout;
       fileout << setprecision(15);
