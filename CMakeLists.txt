@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.5)
 #This is hacky and works only on the HPC Woodycluster in Erlangen
 #set(CMAKE_C_COMPILER "/apps/gcc/gcc-7.2.0-x86_64/bin/gcc")
 #set(CMAKE_CXX_COMPILER "/apps/gcc/gcc-7.2.0-x86_64/bin/g++")
