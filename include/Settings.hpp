@@ -3,22 +3,14 @@
 
 #include <string>
 #include <iostream>
+#include <map>
 
 class Settings{
 private:
-    long long fStartEvalTime = 0;
-    long long fEndEvalTime = 0;
-    bool fTimeLimitation = false;
-    int fTauBegin = -250e3;
-    int fTauEnd = 250e3;
-    int fNumberOfBins = 2000;
-    std::string fCalibrationMode = "n";
+    std::map<std::string, long long> fSettingsMap;
 
 public:
-    long long GetStartEvalTime() const 
-    {
-        return fStartEvalTime;
-    }
+    Settings();
 
     void PrintSettings();
     void ChangeSettings(std::string change);
@@ -26,8 +18,8 @@ public:
     int GetNumberOfBins() const;
     int GetTauBegin() const;
     int GetTauEnd() const;
-    std::string GetCalibrationMode() const;
-    long long GetStarEvalTime() const;
+    int GetCalibrationMode() const;
+    long long GetStartEvalTime() const;
     long long GetEndEvalTime() const;
     bool GetTimeLimitation() const;
 
@@ -36,7 +28,7 @@ public:
     void SetTimeLimitation(bool inputlimit);
     void SetTauBegin(int taubegin);
     void SetTauEnd(int tauend);
-    void SetCalibrationMode(std::string calibrationmode);
+    void SetCalibrationMode(int calibrationmode);
     void SetNumberOfBins(int numberofbins);
 };
 
