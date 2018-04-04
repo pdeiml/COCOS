@@ -26,6 +26,7 @@
 #include  <termios.h>
 #include  <string.h>
 
+#include "Settings.hpp"
 
 using namespace std;
 //Compile-Befehl auf mac mit g++:
@@ -433,94 +434,27 @@ int main (int argc, char* argv[])
 {
 
     std::cout << "\n\nSTART COCOS" << std::endl;
-
-
-    //Set Parameters, all of them can be changed later on manually in the executable
-    long long startevaltime = 0;
-    long long endevaltime = 0;
-    bool timelimitation = false;   
-    
-    int taubeg = -250e3;
-    int tauend =  250e3;
-    int binnumber = 2000;
-    	
-
-
+    Settings vSetting;
+    vSetting.ReadSettingsFile();
+    vSetting.PrintSettings();
 
     //#############################################################################//
     //############# Jetzt kommen jede Menge manuelles-Einstellen-Zeug #############//
-    std::string calibrationmodestring[3];
-    calibrationmodestring[0] = "none";
-    calibrationmodestring[1] = "read";
-    calibrationmodestring[2] = "write";
 
     int calibrationmode = 0;
-    std::string calibfilename = "Calibration.txt";
-
-
-    //Get settings from settings file
-    std::ifstream settingsfile;
-    std::vector<int> settingsvector;
-    std::vector<std::string> forcalibfilename;
-    std:string settingssub; std::string settingsstring;
-    settingsfile.open("settings.txt");
-    while (std::getline(settingsfile,settingsstring))
-    {
-      if (settingsstring == "#end"){goto endsettings;}
-      settingssub = settingsstring.substr(settingsstring.find(" ")+1);
-      //std::cout << settingssub << std::endl;
-      settingsvector.push_back(std::atof(settingssub.c_str()));
-    }
-    endsettings:;
-    settingsfile.close();
-
-    startevaltime  =  1e12 * settingsvector.at(0);
-    endevaltime    =  1e12 * settingsvector.at(1);
-    timelimitation =  settingsvector.at(2);
-    taubeg         =  settingsvector.at(3);
-    tauend         =  settingsvector.at(4);
-    binnumber      =  settingsvector.at(5);
-    calibrationmode=  settingsvector.at(6);
-
-    if (calibrationmode == 1 || calibrationmode == 2)
-    {
-      settingsfile.open("settings.txt");
-      while (std::getline(settingsfile,settingsstring))
-      {
-        forcalibfilename.push_back(settingsstring);
-      }
-      if (forcalibfilename.size() < 9){std::cout << "Could not find calibration file. Please make sure to give a correct name!" << std::endl; exit(1);}
-      calibfilename  =  forcalibfilename.at(8);
-      settingsfile.close();
-    }
-
-
-
-
-
-    std::cout << "#################################################" << std::endl;
-    //std::cout << "\tStart inputline:\t" << startinput << "\n\tEnd inputline:\t\t" << inputlines << std::endl;
-    //std::cout << "\tLimit inputlines?:\t" << linelimit << std::endl;
-    std::cout << "\tStart evaluation time:\t" << 1e-12 * startevaltime << " s\n\tEnd evaluation time:\t" << 1e-12 * endevaltime << " s" << std::endl;
-    std::cout << "\tLimit evaluation time?:\t" << timelimitation << std::endl;
-
-    std::cout << "Output:\n\tStarttime (ps):\t\t" << taubeg << "\n\tEndtime (ps):\t\t" << tauend << "\n\tNumber of bins:\t\t" << binnumber << "\t-> binwidth = " << 1.*(tauend - taubeg)/(1.*binnumber) << " ps" << std::endl;
-    
-    std::cout << "\nCalibration mode:\t\t" << calibrationmodestring[calibrationmode] << std::endl;
-    std::cout << "Calibration file name\t\t" << calibfilename << std::endl;
-    std::cout << "##################################################" << std::endl;
+    std::string calibfilename = vSetting.GetCalibrationFileName();
 
 	//############# Ende manuelles Einstellen-Zeug #############//
 	//##########################################################//
 
 
-    const int nbins = binnumber;
-    double binwidth = 1.*(tauend - taubeg)/(1.*nbins);
+    const int nbins = vSetting.GetNumberOfBins();
+    double binwidth = 1.*(vSetting.GetTauEnd() - vSetting.GetTauBegin())/(1.*nbins);
     if (binwidth < 250){std::cout << "Warning: Binwidth (" << binwidth << " ps) is below the mimimum time-step of the electronics (250 ps)" << std::endl;}
     
     //Adjust start and end time, so that the bins are centered around their value
-    taubeg = taubeg - (binwidth/2);
-    tauend = tauend - (binwidth/2);
+    int taubeg = vSetting.GetTauBegin() - (binwidth/2);
+    int tauend = vSetting.GetTauEnd() - (binwidth/2);
 
 
 
@@ -841,7 +775,7 @@ int main (int argc, char* argv[])
         std::cout << "EVC: " << eventcounter << "  RecNum " << RecNum << std::endl;
 
         //Evaluate only if last time is not before start evaluation time
-        if (inputvector3.back() >= startevaltime)
+        if (inputvector3.back() >= vSetting.GetStartEvalTime())
         {
                       //###############################################//
                      std::cout << "Space-Time-Evaluation:" << std::endl;
@@ -854,11 +788,11 @@ int main (int argc, char* argv[])
                        for (long long i=0; i<partinputs-1; i++)
                        {
                          //Pass ranges that are not within the adjusted evaluation time range:
-                         if (timelimitation == true && inputvector3.at(i) < startevaltime){startlinetotime ++; goto skipevalp;}
+                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) < vSetting.GetStartEvalTime()){startlinetotime ++; goto skipevalp;}
                          else if (startmeastimeout == false){startmeastime = inputvector3.at(i); startmeastimeout = true;}
                          ccounts[inputvector1.at(i)] ++;
                          //End evaluation complete if current time is larger than the upper adjusted timelimit:
-                         if (timelimitation == true && inputvector3.at(i) > endevaltime){endlinetotime = i; if(taubeg>0){goto close;}; goto closep;}
+                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) > vSetting.GetEndEvalTime()){endlinetotime = i; if(taubeg>0){goto close;}; goto closep;}
               
                            //if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}
                          
@@ -899,10 +833,10 @@ int main (int argc, char* argv[])
                        for (long long i=1; i<partinputs; i++)//Start with i=1 as i-1=0
                        {
                          //Pass ranges that are not within the adjusted evaluation time range:
-                         if (timelimitation == true && inputvector3.at(i) < startevaltime){goto skipevaln;}
+                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) < vSetting.GetStartEvalTime()){goto skipevaln;}
                          if (tauend <= 0){ccounts[inputvector1.at(i)] ++;}//Count events as well when only negative time range
                          //End evaluation completely if actual time is larger than the upper adjusted timelimit:
-                         if (timelimitation == true && inputvector3.at(i) > endevaltime){goto close;}
+                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) > vSetting.GetEndEvalTime()){goto close;}
               
               
                            //if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}
@@ -1228,7 +1162,7 @@ int main (int argc, char* argv[])
       //fileout << fixed;
       fileout << "#---------------------------------------------------\n";
       fileout << "# File: " << argv[1] << "\n";
-      fileout << "# is " << 1e-12 * startevaltime << ";\tie " << 1e-12 * endevaltime << ";\tsl " << timelimitation << "\n";
+      fileout << "# is " << vSetting.GetStartEvalTime() << ";\tie " << 1e-12 * vSetting.GetEndEvalTime() << ";\tsl " << vSetting.GetTimeLimitation() << "\n";
       fileout << "# ts " << taubeg + (binwidth/2) << ";\tte " << tauend + (binwidth/2) << ";\tnb " << nbins << " ->Width: " << binwidth << "\n";
       fileout << "#---------------------------------------------------\n";
       for (int b=0; b<nbins; b++)

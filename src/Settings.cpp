@@ -10,6 +10,70 @@ Settings::Settings(){
     fSettingsMap.insert(std::make_pair("cm", 0));
 }
 
+std::string Settings::GetCalibrationFileName() const
+{
+    return fCalibrationFile;
+}
+
+void Settings::ReadSettingsFile()
+{
+    std::ifstream ifs(fSettingsFile);
+    if(!ifs){
+        std::cerr << "ERROR: Cannot open settings file settings.txt!\n" << std::endl;
+        std::cerr << "Does a settings.txt exist?" << std::endl;
+    } else if (!CheckSettingsFile(fSettingsFile)){
+        std::cerr << "Wrong layout of settings.txt\n" << std::endl;
+    }
+    std::string line;
+    while(getline(ifs, line)){
+        if(line[0] == '#'){
+            continue;
+        } else if (line[0] == '$'){
+            fCalibrationFile = line.substr(1, line.size()-1);
+        } 
+        else {
+            std::string parameter;
+            long long value;
+            parameter = line.substr(0,2);
+            value = std::stoll(line.substr(3, line.size()-1));
+            if(parameter == "is"){
+                SetStartEvalTime(value);
+            } else if (parameter == "ie"){
+                SetEndEvalTime(value);
+            } else if (parameter == "sl"){
+                SetTimeLimitation(value);
+            } else if (parameter == "ts"){
+                SetTauBegin(value);
+            } else if (parameter == "te"){
+                SetTauEnd(value);
+            } else if (parameter == "nb"){
+                SetNumberOfBins(value);
+            } else if (parameter == "cm"){
+                SetCalibrationMode(value);
+            }
+        }
+    }
+    PrintSettingsFile(fSettingsFile);
+}
+
+void PrintSettingsFile(std::string file){
+    std::ifstream f(file);
+    std::cout << f.rdbuf();
+}
+
+bool CheckSettingsFile(std::string file){
+    std::ifstream ifs(file);
+    std::string line;
+    while(getline(ifs, line)){
+        if(line[0] == '#'){
+            continue;
+        } else if (line[2] != ' '){
+            return false;
+        }
+    }
+    return true;
+}
+
 void Settings::PrintSettings()
 {
     std::string change;
@@ -28,6 +92,8 @@ void Settings::PrintSettings()
 
 void Settings::ChangeSettings(std::string change)
 {
+    // TODO: Add warnings if the values are incorrect
+    // e.g. ts > te or not a number
     if (change == "is"){
         long long starteval;
         std::cout << "Enter new start evaluation time [s]: ";
