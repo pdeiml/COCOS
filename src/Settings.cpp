@@ -130,10 +130,12 @@ void Settings::ChangeSettings(std::string change)
         std::cin >> calibrationmode;
         SetCalibrationMode(calibrationmode);
     } else if (change == "c"){
+        goto endmarker;
     } else {
         std::cout << "Wrong parameter!" << std::endl;
     }
     PrintSettings();
+    endmarker:;
 }
 
 int Settings::GetNumberOfBins() const
