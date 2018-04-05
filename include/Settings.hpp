@@ -18,6 +18,7 @@ public:
     void ReadSettingsFile();
 
     void PrintSettings();
+    void PrintSettingsHPC();
     void ChangeSettings(std::string change);
 
     int GetNumberOfBins() const;
