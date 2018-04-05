@@ -78,8 +78,8 @@ void Settings::PrintSettings()
 {
     std::string change;
     std::cout << "Current Settings:\n#################\n";
-    std::cout << "Start evaluation time [is]:\t" << fSettingsMap["is"] << " s\n";
-    std::cout << "End evaluation time [ie]:\t" << fSettingsMap["ie"] << " s\n";
+    std::cout << "Start evaluation time [is]:\t" << 1e-12 * fSettingsMap["is"] << " s\n";
+    std::cout << "End evaluation time [ie]:\t" << 1e-12 * fSettingsMap["ie"] << " s\n";
     std::cout << "Set input limitation [sl]:\t" << fSettingsMap["sl"] << "\n";
     std::cout << "Start time difference [tb]:\t" << fSettingsMap["tb"] << " ps\n";
     std::cout << "End time difference [te]:\t" << fSettingsMap["te"] << " ps\n";
