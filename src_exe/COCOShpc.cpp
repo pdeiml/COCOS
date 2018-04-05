@@ -441,7 +441,7 @@ int main (int argc, char* argv[])
     //#############################################################################//
     //############# Jetzt kommen jede Menge manuelles-Einstellen-Zeug #############//
 
-    int calibrationmode = 0;
+    int calibrationmode = vSetting.GetCalibrationMode();
     std::string calibfilename = vSetting.GetCalibrationFileName();
 
 	//############# Ende manuelles Einstellen-Zeug #############//
