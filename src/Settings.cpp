@@ -180,12 +180,12 @@ void Settings::SetCalibrationMode(int calibrationmode)
 
 void Settings::SetStartEvalTime(long long starteval)
 {
-    fSettingsMap["is"] = starteval;
+    fSettingsMap["is"] = 1e12 * starteval;
 }
 
 void Settings::SetEndEvalTime(long long endeval)
 {
-    fSettingsMap["ie"] = endeval;
+    fSettingsMap["ie"] = 1e12 * endeval;
 }
 
 void Settings::SetTimeLimitation(bool inputlimit)
