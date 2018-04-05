@@ -81,7 +81,7 @@ void Settings::PrintSettings()
     std::cout << "Start evaluation time [is]:\t" << 1e-12 * fSettingsMap["is"] << " s\n";
     std::cout << "End evaluation time [ie]:\t" << 1e-12 * fSettingsMap["ie"] << " s\n";
     std::cout << "Set input limitation [sl]:\t" << fSettingsMap["sl"] << "\n";
-    std::cout << "Start time difference [tb]:\t" << fSettingsMap["tb"] << " ps\n";
+    std::cout << "Start time difference [ts]:\t" << fSettingsMap["ts"] << " ps\n";
     std::cout << "End time difference [te]:\t" << fSettingsMap["te"] << " ps\n";
     std::cout << "Number of bins [nb]:\t\t" << fSettingsMap["nb"] << "\n";
     std::cout << "Calibration mode [cm]:\t" << fSettingsMap["cm"] << "\n";
@@ -97,7 +97,7 @@ void Settings::PrintSettingsHPC()
     std::cout << "Start evaluation time:\t" << 1e-12 * fSettingsMap["is"] << " s\n";
     std::cout << "End evaluation time:\t" << 1e-12 * fSettingsMap["ie"] << " s\n";
     std::cout << "Set input limitation:\t" << fSettingsMap["sl"] << "\n";
-    std::cout << "Start time difference:\t" << fSettingsMap["tb"] << " ps\n";
+    std::cout << "Start time difference:\t" << fSettingsMap["ts"] << " ps\n";
     std::cout << "End time difference:\t" << fSettingsMap["te"] << " ps\n";
     std::cout << "Number of bins:\t\t" << fSettingsMap["nb"] << "\n";
     std::cout << "Calibration mode:\t" << fSettingsMap["cm"] << "\n";
@@ -122,14 +122,14 @@ void Settings::ChangeSettings(std::string change)
         std::cout << "Enter 0 (=false) or 1 (=true): ";
         std::cin >> inputlimit;
         SetTimeLimitation((bool)inputlimit);
-    } else if (change == "tb"){
+    } else if (change == "ts"){
         int taubegin;
-        std::cout << "Enter new start time difference [ns]: ";
+        std::cout << "Enter new start time difference [ps]: ";
         std::cin >> taubegin;
         SetTauBegin(taubegin);
     } else if (change == "te"){
         int tauend;
-        std::cout << "Enter new start time difference [ns]: ";
+        std::cout << "Enter new start time difference [ps]: ";
         std::cin >> tauend;
         SetTauEnd(tauend);
     } else if (change == "nb"){
@@ -158,7 +158,7 @@ int Settings::GetNumberOfBins() const
 
 int Settings::GetTauBegin() const
 {
-    return (int)(fSettingsMap.find("tb") -> second);
+    return (int)(fSettingsMap.find("ts") -> second);
 }
 
 int Settings::GetTauEnd() const
