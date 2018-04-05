@@ -90,6 +90,19 @@ void Settings::PrintSettings()
     ChangeSettings(change);
 }
 
+void Settings::PrintSettingsHPC()
+{
+    std::string change;
+    std::cout << "Settings:\n#################\n";
+    std::cout << "Start evaluation time:\t" << 1e-12 * fSettingsMap["is"] << " s\n";
+    std::cout << "End evaluation time:\t" << 1e-12 * fSettingsMap["ie"] << " s\n";
+    std::cout << "Set input limitation:\t" << fSettingsMap["sl"] << "\n";
+    std::cout << "Start time difference:\t" << fSettingsMap["tb"] << " ps\n";
+    std::cout << "End time difference:\t" << fSettingsMap["te"] << " ps\n";
+    std::cout << "Number of bins:\t\t" << fSettingsMap["nb"] << "\n";
+    std::cout << "Calibration mode:\t\t" << fSettingsMap["cm"] << "\n";
+}
+
 void Settings::ChangeSettings(std::string change)
 {
     // TODO: Add warnings if the values are incorrect
