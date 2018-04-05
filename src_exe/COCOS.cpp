@@ -427,7 +427,7 @@ int main (int argc, char* argv[])
     if (binwidth < 250){std::cout << "Warning: Binwidth (" << binwidth << " ps) is below the mimimum time-step of the electronics (250 ps)" << std::endl;}
     
     //Adjust start and end time, so that the bins are centered around their value
-    int taubeg = vSetting.GetTauEnd() - (binwidth/2);
+    int taubeg = vSetting.GetTauBegin() - (binwidth/2);
     int tauend = vSetting.GetTauEnd() - (binwidth/2);
 
     bool evaluating = false;//Check if we are evaluation at the moment
