@@ -84,7 +84,7 @@ void Settings::PrintSettings()
     std::cout << "Start time difference [tb]:\t" << fSettingsMap["tb"] << " ps\n";
     std::cout << "End time difference [te]:\t" << fSettingsMap["te"] << " ps\n";
     std::cout << "Number of bins [nb]:\t\t" << fSettingsMap["nb"] << "\n";
-    std::cout << "Calibration mode [cm]:\t\t" << fSettingsMap["cm"] << "\n";
+    std::cout << "Calibration mode [cm]:\t" << fSettingsMap["cm"] << "\n";
     std::cout << "\nDo you want to change something (c for continue)? ";
     std::cin >> change;
     ChangeSettings(change);
@@ -100,7 +100,7 @@ void Settings::PrintSettingsHPC()
     std::cout << "Start time difference:\t" << fSettingsMap["tb"] << " ps\n";
     std::cout << "End time difference:\t" << fSettingsMap["te"] << " ps\n";
     std::cout << "Number of bins:\t\t" << fSettingsMap["nb"] << "\n";
-    std::cout << "Calibration mode:\t\t" << fSettingsMap["cm"] << "\n";
+    std::cout << "Calibration mode:\t" << fSettingsMap["cm"] << "\n";
 }
 
 void Settings::ChangeSettings(std::string change)
