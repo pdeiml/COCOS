@@ -84,7 +84,7 @@ void Settings::PrintSettings()
     std::cout << "Start time difference [ts]:\t" << fSettingsMap["ts"] << " ps\n";
     std::cout << "End time difference [te]:\t" << fSettingsMap["te"] << " ps\n";
     std::cout << "Number of bins [nb]:\t\t" << fSettingsMap["nb"] << "\n";
-    std::cout << "Calibration mode [cm]:\t" << fSettingsMap["cm"] << "\n";
+    std::cout << "Calibration mode [cm]:\t\t" << fSettingsMap["cm"] << "\n";
     std::cout << "\nDo you want to change something (c for continue)? ";
     std::cin >> change;
     ChangeSettings(change);
