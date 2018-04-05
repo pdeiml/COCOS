@@ -436,7 +436,7 @@ int main (int argc, char* argv[])
     std::cout << "\n\nSTART COCOS" << std::endl;
     Settings vSetting;
     vSetting.ReadSettingsFile();
-    vSetting.PrintSettings();
+    vSetting.PrintSettingsHPC();
 
     //#############################################################################//
     //############# Jetzt kommen jede Menge manuelles-Einstellen-Zeug #############//
