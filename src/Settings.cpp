@@ -112,11 +112,13 @@ void Settings::ChangeSettings(std::string change)
         std::cout << "Enter new start evaluation time [s]: ";
         std::cin >> starteval;
         SetStartEvalTime(starteval);
+        SetTimeLimitation(true);
     } else if (change == "ie"){
         long long endeval;
         std::cout << "Enter new start evaluation time [s]: ";
         std::cin >> endeval;
         SetEndEvalTime(endeval);
+        SetTimeLimitation(true);
     } else if (change == "sl"){
         bool inputlimit;
         std::cout << "Enter 0 (=false) or 1 (=true): ";
