@@ -26,6 +26,7 @@
 #include  <string.h>
 
 #include "Settings.hpp"
+#include "PtuFile.hpp"
 
 
 using namespace std;
@@ -411,6 +412,8 @@ void ProcessHHT3(unsigned int TTTRRecord, int HHVersion)
 
 int main (int argc, char* argv[])
 {
+    Logger().ReportingLevel() = sDebug;
+
     std::cout << "\n\nSTART COCOS\n" << std::endl;
 
     Settings vSetting;
@@ -432,6 +435,7 @@ int main (int argc, char* argv[])
 
     bool evaluating = false;//Check if we are evaluation at the moment
 
+GDEBUG << "Step1";
     //Get calibration data
     std::vector<float> vcal[2][2];
     std::vector<float> vcalt;
@@ -472,7 +476,7 @@ int main (int argc, char* argv[])
     }
 
 
-
+    GDEBUG << "Step2";
 
 
     //Start-timer for calculating the total computation time
@@ -525,10 +529,14 @@ int main (int argc, char* argv[])
 //##################################################################################//
 //############# Jetzt wieder jede Menge Code aus dem ptu -> txt - file #############//
 
+    PtuFile vPtuFile(argv[1]);
+    vPtuFile.OpenPtuFile();
+    vPtuFile.ReadHeader();
+    FILE* fpin = vPtuFile.GetFilePointer();
     
     int timecounter = 0;
-    char Magic[8];
-    char Version[8];
+    // char Magic[8];
+    // char Version[8];
     char Buffer[40];
     char* AnsiBuffer;
     char* WideBuffer;
@@ -538,37 +546,6 @@ int main (int argc, char* argv[])
     long long RecordType = 0;
     long long maxinput = -1;//For later limitation of inputlines
 
-
-    //printf("\nPicoQuant Unified TTTR (PTU) Mode File Demo");
-    //printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-
-    if((fpin=fopen(argv[1],"rb"))==NULL)
-        {printf("\n ERROR! Input file cannot be opened, aborting.\n"); goto close;}
-
-
-
-    printf("\n Loading data from %s \n", argv[1]);
-    //printf("\n Writing output to %s \n", argv[2]);
-  
-    Result = fread( &Magic, 1, sizeof(Magic) ,fpin);
-    if (Result!= sizeof(Magic))
-    {
-      printf("\nerror reading header, aborted.");
-        goto close;
-    }
-    Result = fread(&Version, 1, sizeof(Version) ,fpin);
-    if (Result!= sizeof(Version))
-      {
-      printf("\nerror reading header, aborted.");
-        goto close;
-    }
-    if (strncmp(Magic, "PQTTTR", 6))
-    {
-      printf("\nWrong Magic, this is not a PTU file.");
-      goto close;
-    }
-    //fprintf(fpout, "Tag Version: %s \n", Version);
-  
     // read tagged header
     do
     {
