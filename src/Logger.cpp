@@ -19,13 +19,13 @@ LogLevel& Logger::ReportingLevel()
 std::ostringstream& Logger::ToString(LogLevel level)
 {
     if (level == sError) {
-        os << "\033[91m ERROR\033[0m";
+        os << "\033[41mERROR\033[0m";
     } else if (level == sWarning) {
-        os << "\033[33m WARNING\033[0m";
-    } else if (level == sInfo){
-        os << "\033[32m INFO\033[0m";
+        os << "\033[31mWARNING\033[0m";
+    } else if (level== sInfo){
+        os << "\033[92mINFO\033[0m";
     } else if (level == sDebug){
-        os << "\033[36m DEBUG\033[0m";
+        os << "\033[94mDEBUG\033[0m";
     }
 }
 
