@@ -210,7 +210,7 @@ void Settings::SetTimeLimitation(bool inputlimit)
 
 void Settings::SetTauBegin(int taubegin)
 {
-    fSettingsMap["tb"] = taubegin;
+    fSettingsMap["ts"] = taubegin;
 }
 
 void Settings::SetTauEnd(int tauend)
