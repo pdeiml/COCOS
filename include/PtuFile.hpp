@@ -18,9 +18,17 @@ private:
 public:
     PtuFile(char* filename);
     bool ReadHeader();
+
+    // Getter functions
+    long long GetRecordType() const;
+    long long GetNumberOfRecords() const;
+    double GetGlobalResolution() const;
+    double GetIGlobalResolution() const;
+    FILE* GetFilePointer();
+
+    // Open & close file
     bool OpenPtuFile();
     bool ClosePtuFile();
-    FILE* GetFilePointer();
 };
 
 #endif
