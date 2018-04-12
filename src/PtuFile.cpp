@@ -1,9 +1,15 @@
 #include "PtuFile.hpp"
 
+// Constructors
+// ============
+
 PtuFile::PtuFile(char* filename) :
     fFilename(filename)
 {
 }
+
+// Public member functions
+// =======================
 
 bool PtuFile::ReadHeader()
 {
@@ -17,22 +23,9 @@ bool PtuFile::ReadHeader()
     fHeader.ReadHeaderTag();
 }
 
-bool PtuFile::OpenPtuFile()
-{
-    if((fFile = std::fopen(fFilename, "rb")) == nullptr){
-        GERROR << "Input file cannot be opened.";
-        ClosePtuFile();
-        return false;
-    } else {
-        GINFO << "Successfully opened ptu file.";
-        return true;
-    }
-}
+// Getter functions
+// ----------------
 
-FILE* PtuFile::GetFilePointer()
-{
-    return fFile;
-}
 
 long long PtuFile::GetRecordType() const
 {
@@ -52,6 +45,25 @@ double PtuFile::GetGlobalResolution() const
 double PtuFile::GetIGlobalResolution() const
 {
     fHeader.GetIGlobalResolution();
+}
+
+FILE* PtuFile::GetFilePointer()
+{
+    return fFile;
+}
+
+// Open & close file
+
+bool PtuFile::OpenPtuFile()
+{
+    if((fFile = std::fopen(fFilename, "rb")) == nullptr){
+        GERROR << "Input file cannot be opened.";
+        ClosePtuFile();
+        return false;
+    } else {
+        GINFO << "Successfully opened ptu file.";
+        return true;
+    }
 }
 
 bool PtuFile::ClosePtuFile()

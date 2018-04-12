@@ -1,6 +1,23 @@
 #include "Header.hpp"
 #include "Logger.hpp"
 
+// Private member functions
+// ========================
+
+time_t Header::TDateTime_TimeT(double Convertee)
+{
+    const int EpochDiff = 25569; // days between 30/12/1899 and 01/01/1970
+    const int SecsInDay = 86400; // number of seconds in a day
+    time_t Result((long)(((Convertee) - EpochDiff) * SecsInDay));
+    return Result;
+}
+
+// Public member functions
+// =======================
+
+// Reader functions
+// ----------------
+
 bool Header::ReadMagic()
 {
     int Result = fread(&Magic, 1, sizeof(Magic), fFilePointer);
@@ -106,13 +123,8 @@ bool Header::ReadHeaderTag()
     } while (( strncmp( TagHead.Ident, FileTagEnd, sizeof( FileTagEnd ))));
 }
 
-time_t Header::TDateTime_TimeT(double Convertee)
-{
-    const int EpochDiff = 25569; // days between 30/12/1899 and 01/01/1970
-    const int SecsInDay = 86400; // number of seconds in a day
-    time_t Result((long)(((Convertee) - EpochDiff) * SecsInDay));
-    return Result;
-}
+// Getter functions
+// ----------------
 
 long long Header::GetRecordType() const
 {
@@ -133,6 +145,9 @@ double Header::GetIGlobalResolution() const
 {
     return fIGlobalResolution;
 }
+
+// Setter functions
+// ----------------
 
 void Header::SetFilePointer(FILE* file)
 {

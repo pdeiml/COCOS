@@ -56,13 +56,18 @@ private:
     time_t TDateTime_TimeT( double Convertee );
 
 public:
+    // Reader functions
     bool ReadMagic();
     bool ReadVersion();
     bool ReadHeaderTag();
+
+    // Getter functions
     long long GetRecordType() const;
     long long GetNumberOfRecords() const;
     double GetGlobalResolution() const;
     double GetIGlobalResolution() const;
+
+    // Setter functions
     void SetFilePointer(FILE* file);
 };
 
