@@ -30,33 +30,6 @@
 
 
 using namespace std;
-//Compile-Befehl auf mac mit g++:
-//g++ -o COCOS COCOS.cpp `root-config --cflags --glibs --ldflags` -L/usr/local/lib/root
-
-
-//############# Zuerst einiges Zeug aus dem ptu -> txt - Übertragungscode, teilweise abgeändert #############//
-
-
-// some important Tag Idents (TTagHead.Ident) that we will need to read the most common content of a PTU file
-// check the output of this program and consult the tag dictionary if you need more
-#define TTTRTagTTTRRecType "TTResultFormat_TTTRRecType"
-#define TTTRTagNumRecords  "TTResult_NumberOfRecords"  // Number of TTTR Records in the File;
-#define TTTRTagRes         "MeasDesc_Resolution"       // Resolution for the Dtime (T3 Only)
-#define TTTRTagGlobRes     "MeasDesc_GlobalResolution" // Global Resolution of TimeTag(T2) /NSync (T3)
-#define FileTagEnd         "Header_End"                // Always appended as last tag (BLOCKEND)
-
-// TagTypes  (TTagHead.Typ)
-#define tyEmpty8      0xFFFF0008
-#define tyBool8       0x00000008
-#define tyInt8        0x10000008
-#define tyBitSet64    0x11000008
-#define tyColor8      0x12000008
-#define tyFloat8      0x20000008
-#define tyTDateTime   0x21000008
-#define tyFloat8Array 0x2001FFFF
-#define tyAnsiString  0x4001FFFF
-#define tyWideString  0x4002FFFF
-#define tyBinaryBlob  0xFFFFFFFF
 
 // RecordTypes
 #define rtPicoHarpT3     0x00010303    // (SubID = $00 ,RecFmt: $01) (V1), T-Mode: $03 (T3), HW: $03 (PicoHarp)
@@ -73,25 +46,11 @@ using namespace std;
 #pragma pack(8) //structure alignment to 8 byte boundaries
 //TH1I *timestamphistogram_c0 = new TH1I("Timestamp_c0","Timestamps Channel 0",10,0,10);
 //TH1I *timestamphistogram_c1 = new TH1I("Timestamp_c1","Timestamps Channel 1",10,0,10);
-// A Tag entry
-struct TgHd{
-  char Ident[32];     // Identifier of the tag
-  int Idx;            // Index for multiple tags or -1
-  unsigned int Typ;  // Type of tag ty..... see const section
-    long long TagValue; // Value of tag.
-} TagHead;
-
 
 // TDateTime (in file) to time_t (standard C) conversion
 
 const int EpochDiff = 25569; // days between 30/12/1899 and 01/01/1970
 const int SecsInDay = 86400; // number of seconds in a day
-
-time_t TDateTime_TimeT(double Convertee)
-{
-  time_t Result((long)(((Convertee) - EpochDiff) * SecsInDay));
-  return Result;
-}
 
 FILE *fpin;//,*fpout;
 bool IsT2;
@@ -108,12 +67,10 @@ unsigned int cnt_0=0, cnt_1=0;
 //One single vector: (recID) (CHN) (nsync) (truetime)
 //std::vector<long long> inputvector[4];
 
-
 std::vector<long long> inputvector0;
 std::vector<long long> inputvector1;
 std::vector<long long> inputvector2;
 std::vector<long long> inputvector3;
-
 
 //These values will be increased during filling of the inputvector:
 //long long c0_counts = 0; long long c1_counts = 0;
@@ -409,7 +366,6 @@ void ProcessHHT3(unsigned int TTTRRecord, int HHVersion)
 //############# Ende unbearbeiteter Code, jetzt geht's richtig los #############//
 //##############################################################################//
 
-
 int main (int argc, char* argv[])
 {
     Logger().ReportingLevel() = sDebug;
@@ -435,7 +391,6 @@ int main (int argc, char* argv[])
 
     bool evaluating = false;//Check if we are evaluation at the moment
 
-GDEBUG << "Step1";
     //Get calibration data
     std::vector<float> vcal[2][2];
     std::vector<float> vcalt;
@@ -474,10 +429,6 @@ GDEBUG << "Step1";
           vcal[1][0].push_back(1); vcal[1][1].push_back(1);
         }
     }
-
-
-    GDEBUG << "Step2";
-
 
     //Start-timer for calculating the total computation time
     time_t timer;
@@ -531,108 +482,17 @@ GDEBUG << "Step1";
 
     PtuFile vPtuFile(argv[1]);
     vPtuFile.OpenPtuFile();
-    vPtuFile.ReadHeader();
+    if( vPtuFile.ReadHeader() ){
+      GWARNING << "Read ptu header failed.";
+    }
+    GlobRes = vPtuFile.GetGlobalResolution();
+    iGlobRes = vPtuFile.GetIGlobalResolution();
+    long long RecordType = vPtuFile.GetRecordType();
+    long long NumRecords = vPtuFile.GetNumberOfRecords();
     FILE* fpin = vPtuFile.GetFilePointer();
     
-    int timecounter = 0;
-    // char Magic[8];
-    // char Version[8];
-    char Buffer[40];
-    char* AnsiBuffer;
-    char* WideBuffer;
     int Result;
-
-    long long NumRecords = -1;
-    long long RecordType = 0;
     long long maxinput = -1;//For later limitation of inputlines
-
-    // read tagged header
-    do
-    {
-      // This loop is very generic. It reads all header items and displays the identifier and the
-      // associated value, quite independent of what they mean in detail.
-      // Only some selected items are explicitly retrieved and kept in memory because they are 
-      // needed to subsequently interpret the TTTR record data.
-  
-      Result = fread( &TagHead, 1, sizeof(TagHead) ,fpin);
-      if (Result!= sizeof(TagHead))
-      {
-          printf("\nIncomplete File.");
-            goto close;
-      }
-  
-      strcpy(Buffer, TagHead.Ident);
-      if (TagHead.Idx > -1)
-      {
-        sprintf(Buffer, "%s(%d)", TagHead.Ident,TagHead.Idx);
-      }
-      switch (TagHead.Typ)
-      {
-          case tyEmpty8:
-          break;
-        case tyBool8:
-          break;
-        case tyInt8:
-          timecounter ++;
-          if (timecounter == 35){std::cout << "Adjusted measurement time:\t" << 1e-3 * TagHead.TagValue << " s" << std::endl;}
-          // get some Values we need to analyse records
-          if (strcmp(TagHead.Ident, TTTRTagNumRecords)==0) // Number of records
-                      NumRecords = TagHead.TagValue;
-          if (strcmp(TagHead.Ident, TTTRTagTTTRRecType)==0) // TTTR RecordType
-                      RecordType = TagHead.TagValue;
-          break;
-        case tyBitSet64:
-          break;
-        case tyColor8:
-          break;
-        case tyFloat8:
-          if (strcmp(TagHead.Ident, TTTRTagRes)==0) // Resolution for TCSPC-Decay
-                      Resolution = *(double*)&(TagHead.TagValue);
-          if (strcmp(TagHead.Ident, TTTRTagGlobRes)==0) // Global resolution for timetag
-                      GlobRes = *(double*)&(TagHead.TagValue); // in ns
-                      iGlobRes = 1e12 * GlobRes;
-          break;
-        case tyFloat8Array:
-          // only seek the Data, if one needs the data, it can be loaded here
-          fseek(fpin, (long)TagHead.TagValue, SEEK_CUR);
-          break;
-        case tyTDateTime:
-          time_t CreateTime;
-          CreateTime = TDateTime_TimeT(*((double*)&(TagHead.TagValue)));
-          break;
-        case tyAnsiString:
-          AnsiBuffer = (char*)calloc((size_t)TagHead.TagValue,1);
-                  Result = fread(AnsiBuffer, 1, (size_t)TagHead.TagValue, fpin);
-                if (Result!= TagHead.TagValue)
-          {
-            printf("\nIncomplete File.");
-            free(AnsiBuffer);
-                    goto close;
-          }
-          free(AnsiBuffer);
-          break;
-              case tyWideString:
-          WideBuffer = (char*)calloc((size_t)TagHead.TagValue,1);
-                  Result = fread(WideBuffer, 1, (size_t)TagHead.TagValue, fpin);
-                if (Result!= TagHead.TagValue)
-          {
-            printf("\nIncomplete File.");
-            free(WideBuffer);
-                    goto close;
-          }
-          free(WideBuffer);
-          break;
-              case tyBinaryBlob:
-          // only seek the Data, if one needs the data, it can be loaded here
-          fseek(fpin, (long)TagHead.TagValue, SEEK_CUR);
-          break;
-        default:
-          printf("Illegal Type identifier found! Broken file?");
-          goto close;
-      }
-    }
-    while((strncmp(TagHead.Ident, FileTagEnd, sizeof(FileTagEnd))));
-  // End Header loading
 
    // TTTR Record type
    switch (RecordType)
@@ -662,14 +522,10 @@ GDEBUG << "Step1";
     }
 
     unsigned int TTTRRecord;
-    std::cout << "Total number of records of the file:\t" << NumRecords << std::endl;
+    GINFO << "Total number of records of the file:\t" << NumRecords;
 
     //############# Ende wieder jede Menge Code aus dem ptu -> txt - file #############\\
     //##################################################################################\\
-
-
-  	
-
 
   	//Ab jetzt: Vektor füllen, bis 10^9 Events, anschließend auswerten und das ganze nochmal machen...
 
