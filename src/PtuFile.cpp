@@ -14,6 +14,7 @@ bool PtuFile::ReadHeader()
     if(!(fHeader.ReadVersion())){
         return false;
     }
+    fHeader.ReadHeaderTag();
 }
 
 bool PtuFile::OpenPtuFile()
@@ -31,6 +32,26 @@ bool PtuFile::OpenPtuFile()
 FILE* PtuFile::GetFilePointer()
 {
     return fFile;
+}
+
+long long PtuFile::GetRecordType() const
+{
+    fHeader.GetRecordType();
+}
+
+long long PtuFile::GetNumberOfRecords() const
+{
+    fHeader.GetNumberOfRecords();
+}
+
+double PtuFile::GetGlobalResolution() const
+{
+    fHeader.GetGlobalResolution();
+}
+
+double PtuFile::GetIGlobalResolution() const
+{
+    fHeader.GetIGlobalResolution();
 }
 
 bool PtuFile::ClosePtuFile()

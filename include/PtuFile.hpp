@@ -20,6 +20,11 @@ public:
     bool ReadHeader();
     bool OpenPtuFile();
     bool ClosePtuFile();
+
+    double GetGlobalResolution() const;
+    double GetIGlobalResolution() const;
+    long long GetRecordType() const;
+    long long GetNumberOfRecords() const;
     FILE* GetFilePointer();
 };
 
