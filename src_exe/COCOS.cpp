@@ -375,7 +375,7 @@ int main (int argc, char* argv[])
     Settings vSetting;
     vSetting.PrintSettings();
     
-    std::string calibfilename = "Calibration.txt";
+    std::string calibfilename = vSetting.GetCalibrationFileName();
 
 	//############# Ende manuelles Einstellen-Zeug #############//
 	//##########################################################//

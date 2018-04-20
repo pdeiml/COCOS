@@ -10,7 +10,7 @@ class Settings{
 private:
     std::map<std::string, long long> fSettingsMap;
     std::string fSettingsFile = "settings.txt";
-    std::string fCalibrationFile;
+    std::string fCalibrationFile = "Calibration.txt";
 
 public:
     Settings();
@@ -29,6 +29,7 @@ public:
     long long GetEndEvalTime() const;
     bool GetTimeLimitation() const;
     std::string GetCalibrationFileName() const;
+    void SetCalibrationFileName(std::string filename);
     void SetStartEvalTime(long long starteval);
     void SetEndEvalTime(long long endeval);
     void SetTimeLimitation(bool inputlimit);

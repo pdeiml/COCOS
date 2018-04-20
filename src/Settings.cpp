@@ -85,8 +85,12 @@ void Settings::PrintSettings()
     std::cout << "End time difference [te]:\t" << fSettingsMap["te"] << " ps\n";
     std::cout << "Number of bins [nb]:\t\t" << fSettingsMap["nb"] << "\n";
     std::cout << "Calibration mode [cm]:\t\t" << fSettingsMap["cm"] << "\n";
-    std::cout << "\nDo you want to change something (c for continue)? ";
+    std::cout << "Calibration file [fn]:\t\t" << fCalibrationFile << "\n";
+    std::cout << "\nDo you want to change something (c for continue, x for exit)? ";
     std::cin >> change;
+    if (change == "x"){
+        std::exit(0);
+    }
     ChangeSettings(change);
 }
 
@@ -144,6 +148,11 @@ void Settings::ChangeSettings(std::string change)
         std::cout << "Enter 1 (=read), 2 (=write) or 0 (=none): ";
         std::cin >> calibrationmode;
         SetCalibrationMode(calibrationmode);
+    } else if (change == "fn"){
+        std::string filename;
+        std::cout << "Enter name of Calibration file: ";
+        std::cin >> filename;
+        SetCalibrationFileName(filename);
     } else if (change == "c"){
         goto endmarker;
     } else {
@@ -186,6 +195,11 @@ long long Settings::GetEndEvalTime() const
 bool Settings::GetTimeLimitation() const
 {
     return (bool)(fSettingsMap.find("sl") -> second);
+}
+
+void Settings::SetCalibrationFileName(std::string filename)
+{
+    fCalibrationFile = filename;
 }
 
 void Settings::SetCalibrationMode(int calibrationmode)
