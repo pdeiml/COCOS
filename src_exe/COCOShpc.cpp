@@ -977,7 +977,7 @@ int main (int argc, char* argv[])
       //fileout << fixed;
       fileout << "#---------------------------------------------------\n";
       fileout << "# File: " << argv[1] << "\n";
-      fileout << "# is " << vSetting.GetStartEvalTime() << ";\tie " << 1e-12 * vSetting.GetEndEvalTime() << ";\tsl " << vSetting.GetTimeLimitation() << "\n";
+      fileout << "# is " << 1e-12 * vSetting.GetStartEvalTime() << ";\tie " << 1e-12 * vSetting.GetEndEvalTime() << ";\tsl " << vSetting.GetTimeLimitation() << "\n";
       fileout << "# ts " << taubeg + (binwidth/2) << ";\tte " << tauend + (binwidth/2) << ";\tnb " << nbins << " ->Width: " << binwidth << "\n";
       fileout << "#---------------------------------------------------\n";
       for (int b=0; b<nbins; b++)
