@@ -372,6 +372,12 @@ int main (int argc, char* argv[])
 
     std::cout << "\n\nSTART COCOS\n" << std::endl;
 
+    PtuFile vPtuFile(argv[1]);
+    vPtuFile.OpenPtuFile();
+    if( vPtuFile.ReadHeader() ){
+      GWARNING << "Read ptu header failed.";
+    }
+
     Settings vSetting;
     vSetting.PrintSettings();
     
@@ -480,11 +486,7 @@ int main (int argc, char* argv[])
 //##################################################################################//
 //############# Jetzt wieder jede Menge Code aus dem ptu -> txt - file #############//
 
-    PtuFile vPtuFile(argv[1]);
-    vPtuFile.OpenPtuFile();
-    if( vPtuFile.ReadHeader() ){
-      GWARNING << "Read ptu header failed.";
-    }
+    
     GlobRes = vPtuFile.GetGlobalResolution();
     iGlobRes = vPtuFile.GetIGlobalResolution();
     long long RecordType = vPtuFile.GetRecordType();
