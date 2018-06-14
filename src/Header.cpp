@@ -67,7 +67,7 @@ bool Header::ReadHeaderTag()
             case tyInt8:
                 fTimecounter ++;
                 if( fTimecounter == 35 ){
-                    GINFO << "Adjusted measurement time:\t" << 1e03 * TagHead.TagValue << " s";
+                    GINFO << "Adjusted measurement time:\t" << 1e-03 * TagHead.TagValue << " s";
                 }
                 if( strcmp( TagHead.Ident, TTTRTagNumRecords ) == 0){ // Number of rescords
                     fNumOfRecords = TagHead.TagValue;
