@@ -646,7 +646,7 @@ int main (int argc, char* argv[])
                          if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) < vSetting.GetStartEvalTime()){goto skipevaln;}
                          if (tauend <= 0){ccounts[inputvector1.at(i)] ++;}//Count events as well when only negative time range
                          //End evaluation completely if actual time is larger than the upper adjusted timelimit:
-                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) > vSetting.GetStartEvalTime()){goto close;}
+                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) > vSetting.GetEndEvalTime()){goto close;}
               
               
                            //if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}
