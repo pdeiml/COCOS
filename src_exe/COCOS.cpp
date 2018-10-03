@@ -975,7 +975,9 @@ int main (int argc, char* argv[])
       fileout << "# is " << 1e-12 * vSetting.GetStartEvalTime() << ";\tie " << 1e-12 * vSetting.GetEndEvalTime() << ";\tsl " << vSetting.GetTimeLimitation() << "\n";
       fileout << "# ts " << taubeg + (binwidth/2) << ";\tte " << tauend + (binwidth/2) << ";\tnb " << nbins << " ->Width: " << binwidth << "\n";
       fileout << "# Real start time, end time and measurement time [s]:\n";
-      fileout << 1e-12 * startmeastime << "\t" << 1e-12 * endmeastime << "\t" << 1e-12 * meastime << "\n";
+      fileout << "# " << 1e-12 * startmeastime << "\t" << 1e-12 * endmeastime << "\t" << 1e-12 * meastime << "\n";
+      fileout << "# Rates: [MHz]/n";
+      fileout << "# " << c0_rate << "/t" << c1_rate << "/n";
       fileout << "#---------------------------------------------------\n";
       for (int b=0; b<nbins; b++)
       {
