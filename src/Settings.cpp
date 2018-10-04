@@ -67,6 +67,8 @@ bool CheckSettingsFile(std::string file){
     while(getline(ifs, line)){
         if(line[0] == '#'){
             continue;
+        } else if (line[0] == '$'){
+            continue;
         } else if (line[2] != ' '){
             return false;
         }
