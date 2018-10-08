@@ -88,7 +88,7 @@ int main()
     std::string datei;
     std::cout << "\n\033[1;31mMögliche Messdateien:\033[0m" << std::endl;
     std::cout << "\033[1;31m---------------------------------------\033[0m" << std::endl;
-    std::string lsbefehl = "ls -R " + filepath; system(lsbefehl.c_str());
+    std::string lsbefehl = "tree " + filepath; system(lsbefehl.c_str());
     std::cout << "\033[1;31m---------------------------------------\033[0m" << std::endl;
     std::cout << "\033[1;31mMessung:\033[0m\t\t" << filepath; cin >> datei;
 
