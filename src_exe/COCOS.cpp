@@ -368,7 +368,7 @@ void ProcessHHT3(unsigned int TTTRRecord, int HHVersion)
 
 int main (int argc, char* argv[])
 {
-    Logger().ReportingLevel() = sDebug;
+    Logger().ReportingLevel() = sInfo;
 
     std::cout << "\n\nSTART COCOS\n" << std::endl;
 
@@ -496,33 +496,6 @@ int main (int argc, char* argv[])
     int Result;
     long long maxinput = -1;//For later limitation of inputlines
 
-   // TTTR Record type
-   switch (RecordType)
-   {
-     case rtPicoHarpT2:
-       break;
-     case rtPicoHarpT3:
-       break;
-     case rtHydraHarpT2:
-       break;
-     case rtHydraHarpT3:
-       break;
-     case rtHydraHarp2T2:
-       break;
-     case rtHydraHarp2T3:
-       break;
-     case rtTimeHarp260NT3:
-       break;
-     case rtTimeHarp260NT2:
-       break;
-     case rtTimeHarp260PT3:
-       break;
-     case rtTimeHarp260PT2:
-       break;
-   default:
-     goto close;
-    }
-
     unsigned int TTTRRecord;
     GINFO << "Total number of records of the file:\t" << NumRecords;
 
@@ -536,49 +509,22 @@ int main (int argc, char* argv[])
   	for(RecNum=0;RecNum<NumRecords;RecNum++)
   	{
   		eventcounter ++;
-  		//std::cout << RecNum << std::endl;
+  		GDEBUG << std::hex << "RecordType: " << RecordType <<  std::dec << std::endl;
   		Result = fread(&TTTRRecord, 1, sizeof(TTTRRecord) ,fpin);
     	if (Result!= sizeof(TTTRRecord))
     	  {
     	    printf("\nUnexpected end of input file!");
     	    break;
     	  }
-    	switch (RecordType)
+
+    	if (RecordType != rtTimeHarp260NT2)
     	{
-    	case rtPicoHarpT2:
-    	  IsT2 = true;
-    	  ProcessPHT2(TTTRRecord);
-    	  break;
-    	case rtPicoHarpT3:
-    	  IsT2 = false;
-    	  ProcessPHT3(TTTRRecord);
-    	  break;
-    	case rtHydraHarpT2:
-    	  IsT2 = true;
-    	  ProcessHHT2(TTTRRecord, 1);
-    	  break;
-    	case rtHydraHarpT3:
-    	  IsT2 = false;
-    	  ProcessHHT3(TTTRRecord, 1);
-    	  break;
-    	case rtHydraHarp2T2:
-    	case rtTimeHarp260NT2:
-    	case rtTimeHarp260PT2:
-    	  IsT2 = true;
-    	  ProcessHHT2(TTTRRecord, 2);
-    	  break;
-    	case rtHydraHarp2T3:
-    	case rtTimeHarp260NT3:
-    	case rtTimeHarp260PT3:
-    	  IsT2 = false;
-    	  ProcessHHT3(TTTRRecord, 2);
-    	  break;
-    	default:
-	
-    	  goto close;
+    		GERROR << "Wrong Record Type!";
+    		break;
     	}
 
-
+    	IsT2 = true;
+    	ProcessHHT2(TTTRRecord, 2);
 
     	if (eventcounter >= 1e8 || RecNum >= (NumRecords-1))//Jezt kommt die ganze Auswertung einer 10^8-Reihe!
     	{
