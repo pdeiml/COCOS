@@ -368,7 +368,7 @@ void ProcessHHT3(unsigned int TTTRRecord, int HHVersion)
 
 int main (int argc, char* argv[])
 {
-    Logger().ReportingLevel() = sInfo;
+    Logger().ReportingLevel() = sDebug;
 
     std::cout << "\n\nSTART COCOS\n" << std::endl;
 
@@ -509,7 +509,7 @@ int main (int argc, char* argv[])
   	for(RecNum=0;RecNum<NumRecords;RecNum++)
   	{
   		eventcounter ++;
-  		GDEBUG << std::hex << "RecordType: " << RecordType <<  std::dec << std::endl;
+  		// GDEBUG << std::hex << "RecordType: " << RecordType <<  std::dec << std::endl;
   		Result = fread(&TTTRRecord, 1, sizeof(TTTRRecord) ,fpin);
     	if (Result!= sizeof(TTTRRecord))
     	  {
@@ -524,6 +524,8 @@ int main (int argc, char* argv[])
     	}
 
     	IsT2 = true;
+      if( RecNum == 0 ) GDEBUG << std::hex << TTTRRecord << std::dec;
+      if( RecNum == 1 ) GDEBUG << std::hex << TTTRRecord << std::dec;
     	ProcessHHT2(TTTRRecord, 2);
 
     	if (eventcounter >= 1e8 || RecNum >= (NumRecords-1))//Jezt kommt die ganze Auswertung einer 10^8-Reihe!

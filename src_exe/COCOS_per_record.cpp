@@ -120,8 +120,6 @@ void GotPhoton(long long TimeTag, int Channel, int DTime)
   if (RecNum % 10000000 == 0){std::cout << RecNum * 1e-6 << "\t Mio\tTime:\t" << 1e-12 * inputvector3.back() << " s" << std::endl;}//Ausgabe des Fortschritts
 }
 
-
-
 //######################################################################################################################################//
 //############# Jetzt kommt eine noch eine Menge unbearbeiteter ptu->txt Code (lediglich die fprintf-Befehle rausgelöscht) #############//
 
@@ -368,8 +366,13 @@ void ProcessHHT3(unsigned int TTTRRecord, int HHVersion)
 
 int main (int argc, char* argv[])
 {
+    Logger().ReportingLevel() = sInfo;
+
     freopen("./log/out.txt","w",stdout);
-    std::cout << "\n\nSTART COCOS" << std::endl;
+
+    long int vRecordsInPackage = 7e10;
+
+    GINFO << "START COCOS";
     Settings vSetting;
     vSetting.ReadSettingsFile();
     vSetting.PrintSettingsHPC();
@@ -379,6 +382,8 @@ int main (int argc, char* argv[])
 
     int calibrationmode = vSetting.GetCalibrationMode();
     std::string calibfilename = vSetting.GetCalibrationFileName();
+    GDEBUG << calibrationmode;
+    GDEBUG << calibfilename;
 
 	//############# Ende manuelles Einstellen-Zeug #############//
 	//##########################################################//
@@ -399,37 +404,37 @@ int main (int argc, char* argv[])
     double cal00, cal01, cal10, cal11;
     std::string line;
     std::ifstream infile;
-    if (calibrationmode == 1)
-    {
-        infile.open(calibfilename.c_str());
-        if (!infile) 
-        {
-            std::cout << "Unable to open file Kalibration file. Please make sure it exists!" << std::endl;
-            exit(1);   // call system to stop
-        }
-        while (std::getline(infile,line))
-        {
-            sscanf(line.c_str(),"%i\t%lf\t%lf\t%lf\t%lf", &calTIME, &cal00, &cal01, &cal10, &cal11);
-            if(cal00 < 0.001){cal00 =1;}
-            if(cal01 < 0.001){cal01 =1;}
-            if(cal10 < 0.001){cal10 =1;}
-            if(cal11 < 0.001){cal11 =1;}
-            //std::cout << calTIME << "\t" << cal01 << "\t" << cal10 << std::endl;
-            vcalt.push_back(calTIME);
-            vcal[0][0].push_back(cal00); vcal[0][1].push_back(cal01);
-            vcal[1][0].push_back(cal10); vcal[1][1].push_back(cal11);
-        }
-        infile.close();
-    }
-    else//Fill vectors with 1 so that the vector size is correct
-    {
-        for (int i=0; i<nbins; i++)
-        {
-          vcalt.push_back(1);
-          vcal[0][0].push_back(1); vcal[1][0].push_back(1);
-          vcal[1][0].push_back(1); vcal[1][1].push_back(1);
-        }
-    }
+    // if (calibrationmode == 1)
+    // {
+    //     infile.open(calibfilename.c_str());
+    //     if (!infile) 
+    //     {
+    //         std::cout << "Unable to open file Kalibration file. Please make sure it exists!" << std::endl;
+    //         exit(1);   // call system to stop
+    //     }
+    //     while (std::getline(infile,line))
+    //     {
+    //         sscanf(line.c_str(),"%i\t%lf\t%lf\t%lf\t%lf", &calTIME, &cal00, &cal01, &cal10, &cal11);
+    //         if(cal00 < 0.001){cal00 =1;}
+    //         if(cal01 < 0.001){cal01 =1;}
+    //         if(cal10 < 0.001){cal10 =1;}
+    //         if(cal11 < 0.001){cal11 =1;}
+    //         //std::cout << calTIME << "\t" << cal01 << "\t" << cal10 << std::endl;
+    //         vcalt.push_back(calTIME);
+    //         vcal[0][0].push_back(cal00); vcal[0][1].push_back(cal01);
+    //         vcal[1][0].push_back(cal10); vcal[1][1].push_back(cal11);
+    //     }
+    //     infile.close();
+    // }
+    // else//Fill vectors with 1 so that the vector size is correct
+    // {
+    //     for (int i=0; i<nbins; i++)
+    //     {
+    //       vcalt.push_back(1);
+    //       vcal[0][0].push_back(1); vcal[1][0].push_back(1);
+    //       vcal[1][0].push_back(1); vcal[1][1].push_back(1);
+    //     }
+    // }
 
 
 
@@ -454,7 +459,7 @@ int main (int argc, char* argv[])
 	  allchannelhistogram[1][0]->GetXaxis()->SetTitle("#tau [ps]");
 	  allchannelhistogram[1][1]->GetXaxis()->SetTitle("#tau [ps]");
 
-	TH1I *timestamphistogram[2];
+	   TH1I *timestamphistogram[2];
 	  timestamphistogram[0] = new TH1I ("Timestamp_c0","Timestamps Channel 0",10,0,10);
 	  timestamphistogram[1] = new TH1I ("Timestamp_c1","Timestamps Channel 1",10,0,10);
 
@@ -470,8 +475,6 @@ int main (int argc, char* argv[])
 	  int BchannelID; int IchannelID; //int totalfills = 0; int channelerrors = 
 	  long long basicpoint; long long investigationpoint; long long deltat;
 	  int isbin; double timerec; 
-	  long long eventcounter = 0;
-
     //Fill time axis of correlation array
     for (int i=0; i<nbins; i++)
 	  {
@@ -487,6 +490,8 @@ int main (int argc, char* argv[])
 //############# Jetzt wieder jede Menge Code aus dem ptu -> txt - file #############//
     
     PtuFile vPtuFile(argv[1]);
+    long int vStartRecord = atoi(argv[2]);
+    GDEBUG << "2. Argument: " << vStartRecord;
     vPtuFile.OpenPtuFile();
     if( vPtuFile.ReadHeader() ){
       GWARNING << "Read ptu header failed.";
@@ -503,18 +508,30 @@ int main (int argc, char* argv[])
     unsigned int TTTRRecord;
     GINFO << "Total number of records of the file:\t" << NumRecords;
 
+    fseek(fpin, vStartRecord*vRecordsInPackage*4, SEEK_CUR);
+    // fseek(fpin, 4, SEEK_CUR);
+
 //############# Ende wieder jede Menge Code aus dem ptu -> txt - file #############\\
 //##################################################################################\\
   	
   	//Ab jetzt: Vektor füllen, bis 10^9 Events, anschließend auswerten und das ganze nochmal machen...
+    long int vStartEvalTime = 0;
+    long int vEndEvalTime = 0;
+    GDEBUG << "vStartRecord: " << vStartRecord;
+    GDEBUG << "vRecordsInPackage: " << vRecordsInPackage;
+    GDEBUG << "RecNum: " << vStartRecord*vRecordsInPackage;
 
+    long int eventcounter = 0;
   	//Jetzt kommt das eigentliche Auslesen aus der ptu-Datei:
-  	//for(RecNum=0; RecNum<maxinput; RecNum++)
-  	for(RecNum=0;RecNum<NumRecords;RecNum++)
+  	for(RecNum=vStartRecord*vRecordsInPackage;RecNum<(vStartRecord+1)*vRecordsInPackage;RecNum++)
   	{
-  		eventcounter ++;
-      GDEBUG << std::hex << "RecordType: " << RecordType << std::dec << std::endl;
-  		Result = fread(&TTTRRecord, 1, sizeof(TTTRRecord) ,fpin);
+      	eventcounter ++;
+  		Result = fread(&TTTRRecord, 1, sizeof(TTTRRecord),fpin);
+     	// GDEBUG << std::hex << TTTRRecord << std::dec;
+      	// return 0;
+      	// GDEBUG << RecNum;
+      	if( RecNum == vStartRecord*vRecordsInPackage ) vStartEvalTime = truetime*iGlobRes;
+      	// GDEBUG << "new: " << RecNum;
     	if (Result!= sizeof(TTTRRecord))
     	  {
     	    printf("\nUnexpected end of input file!");
@@ -526,19 +543,23 @@ int main (int argc, char* argv[])
         break;
       }
     	  IsT2 = true;
+        if( RecNum == 0 ) GDEBUG << std::hex << TTTRRecord << std::dec;
+        if( RecNum == 1 ) GDEBUG << std::hex << TTTRRecord << std::dec;
     	  ProcessHHT2(TTTRRecord, 2);
 
-    	if (eventcounter >= 1e8 || RecNum >= (NumRecords-1))//Jezt kommt die ganze Auswertung einer 10^8-Reihe!
+        
+        // GDEBUG << "Eventcounter: " << eventcounter;
+        // GDEBUG << "RecNum: " << RecNum;
+    	if (eventcounter >= 1e8 || RecNum == (vStartRecord+1)*vRecordsInPackage-1)//Jezt kommt die ganze Auswertung einer 10^8-Reihe!
       {
         std::cout << "EVC: " << eventcounter << "  RecNum " << RecNum << std::endl;
 
         //Evaluate only if last time is not before start evaluation time
-        if (inputvector3.back() >= vSetting.GetStartEvalTime())
-        {
                       //###############################################//
                      std::cout << "Space-Time-Evaluation:" << std::endl;
                      //###############################################//
                      long long partinputs = inputvector0.size();
+                     GDEBUG << partinputs;
               
                      if (tauend > 0)//Fill positive time-range
                      {
@@ -546,13 +567,13 @@ int main (int argc, char* argv[])
                        for (long long i=0; i<partinputs-1; i++)
                        {
                          //Pass ranges that are not within the adjusted evaluation time range:
-                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) < vSetting.GetStartEvalTime()){startlinetotime ++; goto skipevalp;}
-                         else if (startmeastimeout == false){startmeastime = inputvector3.at(i); startmeastimeout = true;}
+                         // if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) < vSetting.GetStartEvalTime()){startlinetotime ++; goto skipevalp;}
+                         // else if (startmeastimeout == false){startmeastime = inputvector3.at(i); startmeastimeout = true;}
                          ccounts[inputvector1.at(i)] ++;
-                         //End evaluation complete if current time is larger than the upper adjusted timelimit:
-                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) > vSetting.GetEndEvalTime()){endlinetotime = i; if(taubeg>0){goto close;}; goto closep;}
+                         // //End evaluation complete if current time is larger than the upper adjusted timelimit:
+                         // if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) > vSetting.GetEndEvalTime()){endlinetotime = i; if(taubeg>0){goto close;}; goto closep;}
               
-                           //if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}
+                         //   //if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}
                          
                            basicpoint = i;
                            investigationpoint = i+1;
@@ -591,10 +612,10 @@ int main (int argc, char* argv[])
                        for (long long i=1; i<partinputs; i++)//Start with i=1 as i-1=0
                        {
                          //Pass ranges that are not within the adjusted evaluation time range:
-                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) < vSetting.GetStartEvalTime()){goto skipevaln;}
-                         if (tauend <= 0){ccounts[inputvector1.at(i)] ++;}//Count events as well when only negative time range
-                         //End evaluation completely if actual time is larger than the upper adjusted timelimit:
-                         if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) > vSetting.GetEndEvalTime()){goto close;}
+                         // if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) < vSetting.GetStartEvalTime()){goto skipevaln;}
+                         // if (tauend <= 0){ccounts[inputvector1.at(i)] ++;}//Count events as well when only negative time range
+                         // //End evaluation completely if actual time is larger than the upper adjusted timelimit:
+                         // if (vSetting.GetTimeLimitation() == true && inputvector3.at(i) > vSetting.GetEndEvalTime()){goto close;}
               
               
                            //if (i % 10000000 == 0){std::cout << "\t" << 100.*i/(1.*partinputs) << " %" << std::endl;}
@@ -623,10 +644,8 @@ int main (int argc, char* argv[])
                        }
                      }
                      closen:;
-        }
 
-        
-
+       
         //Read out the startmeastime as first element of the inputvector, but only once!
         //if (startmeastimeout == false){std::cout << "PPPPL: " << startlinetotime << std::endl; startmeastime = inputvector3.at(startlinetotime); startmeastimeout = true;}
 
@@ -635,19 +654,22 @@ int main (int argc, char* argv[])
         inputvector0.clear(); inputvector1.clear(); inputvector2.clear(); inputvector3.clear();
       }
   	}
-
+    std::cout << "truetime: " << truetime << std::endl;
+    std::cout << "iGlobRes: " << iGlobRes << std::endl;
+    vEndEvalTime = truetime*iGlobRes;
 	  close:
 	  fclose(fpin);
 	  //fclose(fpout);
-	
+    std::cout << "vEndEvalTime: " << vEndEvalTime << std::endl;
+    std::cout << "vStartEvalTime: " << vStartEvalTime << std::endl;
+    float vMeasTime = vEndEvalTime - vStartEvalTime;
 
-
-
-	//############# Ende Code aus der ptu -> txt - Datei #############//
+//############# Ende Code aus der ptu -> txt - Datei #############//
 	//################################################################//
 
 
-    
+    GDEBUG << ccounts[0];
+    GDEBUG << ccounts[1];
     //const int arraysize = inputvector0.size();
     long long inputs = allcounts;//Doesn't consider a startoffset of lines/time
     std::cout << "Inputs : " << inputs << std::endl;
@@ -657,8 +679,8 @@ int main (int argc, char* argv[])
     //long long endtime = inputvector3.at(inputvector3.size()-1);
     long long meastime = endmeastime - startmeastime;
     std::cout << "--------------------------------------------" << std::endl;
-    std::cout << "Starttime: " << 1e-12 * startmeastime << " s\t\tEndtime: " << 1e-12 * endmeastime << " s" << std::endl;
-    std::cout << "Effective Measurement time : " << 1e-12 * meastime << " s" << std::endl;
+    std::cout << "Starttime: " << 1e-12 * vStartEvalTime << " s\t\tEndtime: " << 1e-12 * vEndEvalTime << " s" << std::endl;
+    std::cout << "Effective Measurement time : " << 1e-12 * vMeasTime << " s" << std::endl;
     
     double c0_rate = 1e6 * ccounts[0]/meastime;//in MHz
     double c1_rate = 1e6 * ccounts[1]/meastime;//in MHz
@@ -900,8 +922,10 @@ int main (int argc, char* argv[])
    info << "File: " << argv[1] << "\n";
    info << "Computation time:\t" << timediff << " s\n";
    info << "---------------------------------------------------\n";
-   info << "Starttime: " << 1e-12 * startmeastime << " s\t\tEndtime: " << 1e-12 * endmeastime << " s\n";
-   info << "Effective Measurement time : " << 1e-12 * meastime << " s\n";
+   info << "StartRecord: " << vStartRecord << "\tEndRecord: " << vStartRecord + vRecordsInPackage << "\n";
+   // info << "Starttime: " << 1e-12 * startmeastime << " s\t\tEndtime: " << 1e-12 * endmeastime << " s\n";
+   // info << "Effective Measurement time : " << 1e-12 * meastime << " s\n";
+   info << "Effective Measurement time: " << vMeasTime*1e-12 << " s\n";
    info << "Channel\tCounts\t\tRate (MHz)\n";
    info << "0\t" << ccounts[0] << "\t" << c0_rate << "\n";
    info << "1\t" << ccounts[1] << "\t" << c1_rate << "\n";
