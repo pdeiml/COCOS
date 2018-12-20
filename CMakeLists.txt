@@ -25,7 +25,7 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src SOURCES)
 add_library(Cocos SHARED ${SOURCES})
 
 #aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src_exe EXE_NAMES)
-set(EXE_NAMES COCOS COCOSdt_vun_hpc COCOShpc COCOS_per_record Jobs_per_record JobcreatorHPC)
+set(EXE_NAMES COCOS_per_time Jobs_per_time COCOS COCOSdt_vun_hpc COCOShpc COCOS_per_record Jobs_per_record JobcreatorHPC)
 
 foreach(EXE_NAME ${EXE_NAMES})
     add_executable(${EXE_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src_exe/${EXE_NAME}.cpp)
