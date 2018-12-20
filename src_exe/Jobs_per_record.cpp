@@ -9,58 +9,36 @@ using namespace std;
 
 int main()
 {
-
-
     //Folder path of ptu-files
-    std::string filepath = "/DATA/";
+    std::string filepath = "/mnt/g/TimeHarpData_A/";
     //Folder path of evaluation files
-    std::string evaluationpath = "/home/iceact/TimeHarpAuswertung/";
+    std::string evaluationpath = "/home/ii/TimeHarpAuswertung/";
     //Folder path of job-files
-    std::string jobpath = "/home/iceact/jobs/";
+    std::string jobpath = "/home/ii/ii_jobs/";
     //Path where COCOShpc is loacated
-    std::string cocoshpcpath = "/home/iceact/Software/cocos/build/";
+    std::string cocoshpcpath = "/home/ii/Software/cocos/build/";
     //***** Change e-mail!!! *****
 
     //Standard interval length of one evaluation in s
-    int evaluationlength_h = 1;
-    int evaluationlength_m = 0;
-    int evaluationlength_s = 0;
-    //Standard total length of evaluation
-    int totalevaluationlength_h = 1;
-    int totalevaluationlength_m = 0;
-    int totalevaluationlength_s = 0;
+    int no_subanalysis = 1;
 
 	std::string jobname;
     std::cout << "\033[1;31mName des Jobs (Rumpf):\033[0m\t\t"; cin >> jobname;
 
-
-    //Settings
     settingsmarker:;
     std::cout << "\n\033[1;31m-----------------------------------------------\033[0m" << std::endl;
-    std::cout << "\033[1;31mLänge der Auswertung\t[a]\033[0m\t" << totalevaluationlength_h << ":" << totalevaluationlength_m << ":" << totalevaluationlength_s << std::endl;
-    std::cout << "\033[1;31mLänge eines Pakets\t[p]\033[0m\t" << evaluationlength_h << ":" << evaluationlength_m << ":" << evaluationlength_s << std::endl;
-    std::cout << "\033[1;31mContinue\t\t[c]\033[0m" << std::endl;
+    std::cout << "\033[1;31mAnzahl an Sub-Analysen\t[n]\033[0m\t\t" << no_subanalysis << std::endl;
+    std::cout << "\033[1;31mContinue\t\t[c]\033[0m\t" << std::endl;
     std::cout << "\033[1;31m-----------------------------------------------\033[0m\n" << std::endl;
 
     std::cout << "\033[1;31mBefehl eingeben:\033[0m\t";
-    std::string instring; cin >> instring;
-    if (instring == "a")
+    std::string instring;
+    cin >> instring;
+
+    if (instring == "n")
     {
-        std::cout << "Länger der Auswertung - Stunden:\t"; cin >> instring;
-        totalevaluationlength_h = std::stoi(instring);
-        std::cout << "Länger der Auswertung - Minuten:\t"; cin >> instring;
-        totalevaluationlength_m = std::stoi(instring);
-        std::cout << "Länger der Auswertung - Sekunden:\t"; cin >> instring;
-        totalevaluationlength_s = std::stoi(instring);
-    }
-    if (instring == "p")
-    {
-        std::cout << "Länger eines Pakets - Stunden:\t"; cin >> instring;
-        evaluationlength_h = std::stoi(instring);
-        std::cout << "Länger eines Pakets - Minuten:\t"; cin >> instring;
-        evaluationlength_m = std::stoi(instring);
-        std::cout << "Länger eines Pakets - Sekunden:\t"; cin >> instring;
-        evaluationlength_s = std::stoi(instring);
+        std::cout << "Anzahl Sub-Analysen:\t"; cin >> instring;
+        no_subanalysis = std::stoi(instring);
     }
     if (instring == "c")
     {
@@ -69,9 +47,7 @@ int main()
     goto settingsmarker;
     endsettingsmarker:;
 
-    int totalev = 3600 * totalevaluationlength_h + 60 * totalevaluationlength_m + totalevaluationlength_s;
-    int paketev = 3600 * evaluationlength_h + 60 * evaluationlength_m + evaluationlength_s;
-    int nfiles = ceil(totalev/paketev);
+    int nfiles = no_subanalysis;
 
     std::string datei;
     std::cout << "\n\033[1;31mMögliche Messdateien:\033[0m" << std::endl;
@@ -81,8 +57,8 @@ int main()
     std::cout << "\033[1;31mMessung:\033[0m\t\t" << filepath; cin >> datei;
 
     std::ostringstream counterstring[100];
-    std::string auswertung, cutauswertung, gesamtpfad, befehl, settingsstring, restpath;
-    ofstream settings, job;
+    std::string auswertung, cutauswertung, gesamtpfad, befehl, settingsstring, restpath, befehl2;
+    ofstream settings, job, mail;
     for (int i=0; i<nfiles; i++)
     {       
         //counterstring[i] << "_" << i << "-" << i+1 << "h";
@@ -114,6 +90,7 @@ int main()
             //std::cout << "gesamtpfad:\t" << gesamtpfad << std::endl;
 
             befehl = "mkdir " + evaluationpath + gesamtpfad; system(befehl.c_str()); //std::cout << "Mache:\t" << befehl << std::endl;
+            // std::cout << befehl << "  halsdfa" << std::endl;
             if (restpath.find("/") == -1){mkdirfertig = true;}
             restpath = restpath.substr(restpath.find("/")+1);
 
@@ -121,16 +98,16 @@ int main()
         }
     
         std::string pfadauswertung = evaluationpath + datei.substr(0, datei.find(".")) + "/" + auswertung;
+        befehl2 = "cd " + pfadauswertung + " && mkdir log"; system(befehl2.c_str());
+        // std::cout << "pfad: " << pfadauswertung << std::endl;
         //std::string mkdirstring = "mkdir " + pfadauswertung;
         //system(mkdirstring.c_str()); std::cout << "Mache:\t" << mkdirstring << std::endl;
-        std::string copystring = "scp " + cocoshpcpath + "COCOSoutfile " + pfadauswertung +  "/";
+        std::string copystring = "scp " + cocoshpcpath + "COCOS_per_record " + pfadauswertung +  "/";
         system(copystring.c_str()); //std::cout << "Mache:\t" << copystring << std::endl;
 
 
         settingsstring = pfadauswertung + "/settings.txt";
         settings.open(settingsstring.c_str());
-        settings << "is " << paketev * i << "\n";
-        settings << "ie " << paketev * (i+1) << "\n";
         settings << "sl 1\n";
         settings << "ts -250000\n";
         settings << "te 250000\n";
@@ -140,10 +117,20 @@ int main()
         settings << "$Calibration_" << jobname << "_" << i << ".txt";
         settings.close();
 
+        std::string makemail = pfadauswertung + "/mail.txt";
+        mail.open(makemail.c_str());
+        mail << "From: intensityinterferometry@gmail.com\n";
+        mail << "To: peter.deiml@fau.de\n";
+        mail << "Subject: " << jobname + "_" + counterstring[i].str() + ".sh" << " finished.\n\n";
+        mail << "Job\n" << makejob << "\n is finished.\n\nGreetings from pi4097";
+	mail.close();
+
         job.open(makejob.c_str());
         job << "cd " << pfadauswertung << "/\n";
-        job << "mkdir log\n";
-        job << "./COCOSoutfile " << filepath << datei;
+        // job << "mkdir log\n";
+        job << "./COCOS_per_record " << filepath << datei << " " << i << "\n";
+        job << "ssmtp peter.deiml@fau.de < mail.txt\n";
+	job << "rm mail.txt\n";
         job.close();
 
     }
