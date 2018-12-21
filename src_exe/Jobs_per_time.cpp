@@ -143,7 +143,7 @@ int main()
         job.open(makejob.c_str());
         job << "cd " << pfadauswertung << "/\n";
         job << "mkdir log\n";
-        job << "./COCOSoutfile " << filepath << datei;
+        job << "./COCOS_per_time " << filepath << datei;
         job.close();
 
     }
