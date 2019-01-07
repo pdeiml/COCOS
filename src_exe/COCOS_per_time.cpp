@@ -488,9 +488,7 @@ int main (int argc, char* argv[])
     
     PtuFile vPtuFile(argv[1]);
     vPtuFile.OpenPtuFile();
-    if( vPtuFile.ReadHeader() ){
-      GWARNING << "Read ptu header failed.";
-    }
+    vPtuFile.ReadHeader();
     GlobRes = vPtuFile.GetGlobalResolution();
     iGlobRes = vPtuFile.GetIGlobalResolution();
     long long RecordType = vPtuFile.GetRecordType();
@@ -501,7 +499,7 @@ int main (int argc, char* argv[])
     long long maxinput = -1;//For later limitation of inputlines
 
     unsigned int TTTRRecord;
-    GINFO << "Total number of records of the file:\t" << NumRecords;
+    std::cout << "Total number of records of the file:\t" << NumRecords << "\n";
 
 //############# Ende wieder jede Menge Code aus dem ptu -> txt - file #############\\
 //##################################################################################\\
@@ -513,16 +511,15 @@ int main (int argc, char* argv[])
   	for(RecNum=0;RecNum<NumRecords;RecNum++)
   	{
   		eventcounter ++;
-      GDEBUG << std::hex << "RecordType: " << RecordType << std::dec << std::endl;
   		Result = fread(&TTTRRecord, 1, sizeof(TTTRRecord) ,fpin);
     	if (Result!= sizeof(TTTRRecord))
     	  {
-    	    printf("\nUnexpected end of input file!");
+    	    std::cerr << "\nUnexpected end of input file!" << "\n";
     	    break;
     	  }
       if (RecordType != rtTimeHarp260NT2)
       {
-        GERROR << "Wrong Record Type!";
+        std::cerr << "Wrong Record Type!" << "\n";
         break;
       }
     	  IsT2 = true;

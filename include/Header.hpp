@@ -7,8 +7,6 @@
 #include <iostream>
 #include <time.h>
 
-#include "Logger.hpp"
-
 // some important Tag Idents (TTagHead.Ident) that we will need to read the most common content of a PTU file
 // check the output of this program and consult the tag dictionary if you need more
 #define TTTRTagNumRecords  "TTResult_NumberOfRecords"  // Number of TTTR Records in the File;

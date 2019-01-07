@@ -7,7 +7,6 @@
 #include <iostream>
 
 #include "Header.hpp"
-#include "Logger.hpp"
 
 class PtuFile{
 private:

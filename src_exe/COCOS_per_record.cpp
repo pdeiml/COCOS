@@ -366,13 +366,11 @@ void ProcessHHT3(unsigned int TTTRRecord, int HHVersion)
 
 int main (int argc, char* argv[])
 {
-    Logger().ReportingLevel() = sInfo;
-
     freopen("./log/out.txt","w",stdout);
-
+    freopen("./log/log.txt","w",stderr);
     long int vRecordsInPackage = 7e10;
 
-    GINFO << "START COCOS";
+    std::cout << "START COCOS";
     Settings vSetting;
     vSetting.ReadSettingsFile();
     vSetting.PrintSettingsHPC();
@@ -382,8 +380,8 @@ int main (int argc, char* argv[])
 
     int calibrationmode = vSetting.GetCalibrationMode();
     std::string calibfilename = vSetting.GetCalibrationFileName();
-    GDEBUG << calibrationmode;
-    GDEBUG << calibfilename;
+    std::cout << calibrationmode;
+    std::cout << calibfilename;
 
 	//############# Ende manuelles Einstellen-Zeug #############//
 	//##########################################################//
@@ -491,11 +489,10 @@ int main (int argc, char* argv[])
     
     PtuFile vPtuFile(argv[1]);
     long int vStartRecord = atoi(argv[2]);
-    GDEBUG << "2. Argument: " << vStartRecord;
+
     vPtuFile.OpenPtuFile();
-    if( vPtuFile.ReadHeader() ){
-      GWARNING << "Read ptu header failed.";
-    }
+    vPtuFile.ReadHeader();
+
     GlobRes = vPtuFile.GetGlobalResolution();
     iGlobRes = vPtuFile.GetIGlobalResolution();
     long long RecordType = vPtuFile.GetRecordType();
@@ -506,7 +503,7 @@ int main (int argc, char* argv[])
     long long maxinput = -1;//For later limitation of inputlines
 
     unsigned int TTTRRecord;
-    GINFO << "Total number of records of the file:\t" << NumRecords;
+    std::cout << "Total number of records of the file:\t" << NumRecords;
 
     fseek(fpin, vStartRecord*vRecordsInPackage*4, SEEK_CUR);
     // fseek(fpin, 4, SEEK_CUR);
@@ -517,9 +514,9 @@ int main (int argc, char* argv[])
   	//Ab jetzt: Vektor füllen, bis 10^9 Events, anschließend auswerten und das ganze nochmal machen...
     long int vStartEvalTime = 0;
     long int vEndEvalTime = 0;
-    GDEBUG << "vStartRecord: " << vStartRecord;
-    GDEBUG << "vRecordsInPackage: " << vRecordsInPackage;
-    GDEBUG << "RecNum: " << vStartRecord*vRecordsInPackage;
+    std::clog << "vStartRecord: " << vStartRecord << "\n";
+    std::clog << "vRecordsInPackage: " << vRecordsInPackage << "\n";
+    std::clog << "RecNum: " << vStartRecord*vRecordsInPackage << "\n";
 
     long int eventcounter = 0;
   	//Jetzt kommt das eigentliche Auslesen aus der ptu-Datei:
@@ -534,19 +531,16 @@ int main (int argc, char* argv[])
       	// GDEBUG << "new: " << RecNum;
     	if (Result!= sizeof(TTTRRecord))
     	  {
-    	    printf("\nUnexpected end of input file!");
+    	    std::cerr << "\nUnexpected end of input file!" << "\n";
     	    break;
     	  }
       if (RecordType != rtTimeHarp260NT2)
       {
-        GERROR << "Wrong Record Type!";
+        std::cerr << "Wrong Record Type!" << "\n";
         break;
       }
     	  IsT2 = true;
-        if( RecNum == 0 ) GDEBUG << std::hex << TTTRRecord << std::dec;
-        if( RecNum == 1 ) GDEBUG << std::hex << TTTRRecord << std::dec;
     	  ProcessHHT2(TTTRRecord, 2);
-
         
         // GDEBUG << "Eventcounter: " << eventcounter;
         // GDEBUG << "RecNum: " << RecNum;
@@ -559,7 +553,6 @@ int main (int argc, char* argv[])
                      std::cout << "Space-Time-Evaluation:" << std::endl;
                      //###############################################//
                      long long partinputs = inputvector0.size();
-                     GDEBUG << partinputs;
               
                      if (tauend > 0)//Fill positive time-range
                      {
@@ -667,9 +660,6 @@ int main (int argc, char* argv[])
 //############# Ende Code aus der ptu -> txt - Datei #############//
 	//################################################################//
 
-
-    GDEBUG << ccounts[0];
-    GDEBUG << ccounts[1];
     //const int arraysize = inputvector0.size();
     long long inputs = allcounts;//Doesn't consider a startoffset of lines/time
     std::cout << "Inputs : " << inputs << std::endl;

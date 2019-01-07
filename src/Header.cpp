@@ -1,5 +1,4 @@
 #include "Header.hpp"
-#include "Logger.hpp"
 
 // Private member functions
 // ========================
@@ -22,14 +21,14 @@ bool Header::ReadMagic()
 {
     int Result = fread(&Magic, 1, sizeof(Magic), fFilePointer);
     if (Result != sizeof(Magic)){
-        GERROR << "Reading magic of ptu file failed.";
+        std::cerr << "Error:\tReading magic of ptu file failed.";
+        exit(1);
         return false;
     } else {
         if(strncmp(Magic, "PQTTTR", 6)){
-            GERROR << "Wrong beginning of ptu header, this is not a PTU file!";
+            std::clog << "Warning:\tWrong beginning of ptu header, this is not a PTU file!";
             return false;
         } else {
-            GDEBUG << "Magic: " << Magic;
             return true;
         }
     }
@@ -39,10 +38,9 @@ bool Header::ReadVersion()
 {
     int Result = fread(&Version, 1, sizeof(Version), fFilePointer);
     if (Result != sizeof(Version)){
-        GERROR << "Reading version of ptu file failed.";
+        std::cerr << "Error:\tReading version of ptu file failed.";
         return false;
     } else {
-        GDEBUG << "Version: " << Version;
         return true;
     }
 }
@@ -52,7 +50,7 @@ bool Header::ReadHeaderTag()
     do{
         int Result = fread( &TagHead, 1, sizeof(TagHead), fFilePointer);
         if( Result != sizeof(TagHead)){
-            GERROR << "Incomplete ptu file.";
+            std::cerr << "Error:\tWrong size of header tag." << "\n";
             return false;
         }
         strcpy(Buffer, TagHead.Ident);
@@ -67,11 +65,11 @@ bool Header::ReadHeaderTag()
             case tyInt8:
                 fTimecounter ++;
                 if( fTimecounter == 35 ){
-                    GINFO << "Adjusted measurement time:\t" << 1e-03 * TagHead.TagValue << " s";
+                    std::cout << "Adjusted measurement time:\t" << 1e-03 * TagHead.TagValue << " s" << "\n";
                 }
                 if( strcmp( TagHead.Ident, TTTRTagNumRecords ) == 0){ // Number of rescords
                     fNumOfRecords = TagHead.TagValue;
-                    GDEBUG << "Number of records:\t" << fNumOfRecords;
+                    std::cout << "Number of records:\t" << fNumOfRecords << "\n";
                 }
                 if( strcmp( TagHead.Ident, TTTRTagTTTRRecType) == 0 ){ // TTTR RecordType
                     fRecordType = TagHead.TagValue;
@@ -100,7 +98,8 @@ bool Header::ReadHeaderTag()
                 fAnsiBuffer = (char*)calloc((size_t)TagHead.TagValue,1);
                 Result = fread(fAnsiBuffer, 1, (size_t)TagHead.TagValue, fFilePointer);
                 if( Result != TagHead.TagValue){
-                    GERROR << "Incomplete File.";
+                    std::cerr << "Incomplete File." << "\n";
+                    exit(1);
                     return false;
                 }
                 free (fAnsiBuffer);
@@ -109,15 +108,17 @@ bool Header::ReadHeaderTag()
             fWideBuffer = (char*)calloc((size_t)TagHead.TagValue, 1);
                 Result = fread(fWideBuffer, 1, (size_t)TagHead.TagValue, fFilePointer);
                 if( Result != TagHead.TagValue){
-                    GERROR << "Incomplete file.";
+                    std::cerr << "Incomplete file." << "\n";
                     return false;
+                    exit(1);
                 }
                 free( fWideBuffer );
                 break;
             case tyBinaryBlob:
                 break;
             default:
-                GERROR << "Illegal type identifier found! Broken file?";
+                std::cerr << "Error:\tIllegal type identifier found! Broken file?" << "\n";
+                exit(1);
                 return false;
         }
     } while (( strncmp( TagHead.Ident, FileTagEnd, sizeof( FileTagEnd ))));
