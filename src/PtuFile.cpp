@@ -57,11 +57,12 @@ FILE* PtuFile::GetFilePointer()
 bool PtuFile::OpenPtuFile()
 {
     if((fFile = std::fopen(fFilename, "rb")) == nullptr){
-        GERROR << "Input file cannot be opened.";
+        std::cerr << "Error:\tInput file cannot be opened." << "\n";
         ClosePtuFile();
+        exit(1);
         return false;
     } else {
-        GINFO << "Successfully opened ptu file.";
+        std::cout << "Successfully opened ptu file." << "\n";
         return true;
     }
 }

@@ -487,9 +487,7 @@ int main (int argc, char* argv[])
     
     PtuFile vPtuFile(argv[1]);
     vPtuFile.OpenPtuFile();
-    if( vPtuFile.ReadHeader() ){
-      GWARNING << "Read ptu header failed.";
-    }
+    std::clog << "Read ptu header failed." << "\n";
     GlobRes = vPtuFile.GetGlobalResolution();
     iGlobRes = vPtuFile.GetIGlobalResolution();
     long long RecordType = vPtuFile.GetRecordType();
@@ -527,7 +525,7 @@ int main (int argc, char* argv[])
     }
 
     unsigned int TTTRRecord;
-    GINFO << "Total number of records of the file:\t" << NumRecords;
+    std::cout << "Total number of records of the file:\t" << NumRecords << "\n";
 
 //############# Ende wieder jede Menge Code aus dem ptu -> txt - file #############\\
 //##################################################################################\\
