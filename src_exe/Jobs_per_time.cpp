@@ -12,18 +12,18 @@ int main()
 
 
     //Folder path of ptu-files
-    std::string filepath = "/DATA/";
+    std::string filepath = "/mnt/e/Peter/TimeHarpData/";
     //Folder path of evaluation files
-    std::string evaluationpath = "/home/iceact/TimeHarpAuswertung/";
+    std::string evaluationpath = "/home/ii/TimeHarpAuswertung/";
     //Folder path of job-files
-    std::string jobpath = "/home/iceact/jobs/";
+    std::string jobpath = "/home/ii/ii_jobs/";
     //Path where COCOShpc is loacated
-    std::string cocoshpcpath = "/home/iceact/Software/cocos/build/";
+    std::string cocoshpcpath = "/home/ii/Software/cocos/build/";
     //***** Change e-mail!!! *****
 
     //Standard interval length of one evaluation in s
-    int evaluationlength_h = 1;
-    int evaluationlength_m = 0;
+    int evaluationlength_h = 0;
+    int evaluationlength_m = 10;
     int evaluationlength_s = 0;
     //Standard total length of evaluation
     int totalevaluationlength_h = 1;
@@ -82,7 +82,7 @@ int main()
 
     std::ostringstream counterstring[100];
     std::string auswertung, cutauswertung, gesamtpfad, befehl, settingsstring, restpath;
-    ofstream settings, job;
+    ofstream settings, job, mail;
     for (int i=0; i<nfiles; i++)
     {       
         //counterstring[i] << "_" << i << "-" << i+1 << "h";
@@ -123,9 +123,17 @@ int main()
         std::string pfadauswertung = evaluationpath + datei.substr(0, datei.find(".")) + "/" + auswertung;
         //std::string mkdirstring = "mkdir " + pfadauswertung;
         //system(mkdirstring.c_str()); std::cout << "Mache:\t" << mkdirstring << std::endl;
-        std::string copystring = "scp " + cocoshpcpath + "COCOSoutfile " + pfadauswertung +  "/";
+        std::string copystring = "scp " + cocoshpcpath + "COCOS_per_time " + pfadauswertung +  "/";
         system(copystring.c_str()); //std::cout << "Mache:\t" << copystring << std::endl;
 
+
+        std::string makemail = pfadauswertung + "/mail.txt";
+        mail.open(makemail.c_str());
+        mail << "From: intensityinterferometry@gmail.com\n";
+        mail << "To: peter.deiml@fau.de\n";
+        mail << "Subject: " << jobname + "_" + counterstring[i].str() + ".sh" << " finished.\n\n";
+        mail << "Job\n" << makejob << "\n is finished.\n\nGreetings from pi4097";
+        mail.close();
 
         settingsstring = pfadauswertung + "/settings.txt";
         settings.open(settingsstring.c_str());
@@ -143,7 +151,9 @@ int main()
         job.open(makejob.c_str());
         job << "cd " << pfadauswertung << "/\n";
         job << "mkdir log\n";
-        job << "./COCOS_per_time " << filepath << datei;
+        job << "./COCOS_per_time " << filepath << datei << "\n";
+        job << "ssmtp peter.deiml@fau.de < mail.txt\n";
+        job << "rm mail.txt\n";
         job.close();
 
     }
