@@ -4,13 +4,14 @@
 #include <string>
 #include <sstream>
 #include <math.h>
+#include <vector>
 
 using namespace std;
 
 int main()
 {
     //Folder path of ptu-files
-    std::string filepath = "/mnt/g/TimeHarpData_A/";
+    std::string filepath = "/mnt/e/Peter/TimeHarpData/";
     //Folder path of evaluation files
     std::string evaluationpath = "/home/ii/TimeHarpAuswertung/";
     //Folder path of job-files
@@ -21,6 +22,22 @@ int main()
 
     //Standard interval length of one evaluation in s
     int no_subanalysis = 1;
+
+    //E-Mail
+    std::vector < std::string > mailvec;
+    mailvec.push_back("peter.deiml@fau.de");
+    mailvec.push_back("andi.zmija@fau.de");
+    mailvec.push_back("katja.gumbert@fau.de");
+    mailvec.push_back("adrian.zink@fau.de");
+    std::string mailstring, mailidstring;
+    std::cout << "\033[1;31mE-Mail Adresse:\033[0m" << std::endl;
+    for (int i=0; i<mailvec.size(); i++)
+    {
+        std::cout << "\033[1;31m" << i << ":\033[0m\t" << mailvec.at(i) << std::endl;
+    }
+    std::cout << "\033[1;31mBitte Zahl eingeben:\033[0m\t\t"; cin >> mailidstring;
+    mailstring = mailvec.at(std::stoi(mailidstring));
+
 
 	std::string jobname;
     std::cout << "\033[1;31mName des Jobs (Rumpf):\033[0m\t\t"; cin >> jobname;
@@ -120,7 +137,8 @@ int main()
         std::string makemail = pfadauswertung + "/mail.txt";
         mail.open(makemail.c_str());
         mail << "From: intensityinterferometry@gmail.com\n";
-        mail << "To: peter.deiml@fau.de\n";
+        //mail << "To: katja.gumbert@fau.de\n";
+        mail << "To: " << mailstring.c_str() << "\n";
         mail << "Subject: " << jobname + "_" + counterstring[i].str() + ".sh" << " finished.\n\n";
         mail << "Job\n" << makejob << "\n is finished.\n\nGreetings from pi4097";
 	mail.close();
@@ -129,8 +147,9 @@ int main()
         job << "cd " << pfadauswertung << "/\n";
         // job << "mkdir log\n";
         job << "./COCOS_per_record " << filepath << datei << " " << i << "\n";
-        job << "ssmtp peter.deiml@fau.de < mail.txt\n";
-	job << "rm mail.txt\n";
+        //job << "ssmtp peter.deiml@fau.de < mail.txt\n";
+        job << "ssmtp " << mailstring << " < mail.txt\n";
+	    job << "rm mail.txt\n";
         job.close();
 
     }
