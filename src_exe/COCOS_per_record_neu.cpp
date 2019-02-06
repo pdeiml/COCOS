@@ -581,11 +581,11 @@ int main (int argc, char* argv[])
                            //Fill timestamphistogram (only during positive time range)
                            //timestamphistogram[BchannelID]->Fill(inputvector2.at(basicpoint)%8);
 
-                           while (deltat < rtaubeg && investigationpoint < partinputs-1)//Find start photon, only for taubeg > 0
+                           /*while (deltat < rtaubeg && investigationpoint < partinputs-1)//Find start photon, only for taubeg > 0
                            {
                                investigationpoint ++;
                                  deltat = inputvector2.at(investigationpoint) - inputvector2.at(basicpoint);
-                           }
+                           }*/
 
                            while (deltat < rtauend && investigationpoint < partinputs-1)
                            {
